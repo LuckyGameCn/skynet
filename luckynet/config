@@ -1,0 +1,8 @@
+thread = 8
+harbor = 0
+start = "main"
+bootstrap = "snlua bootstrap"
+cpath = "./cservice/?.so"
+lualoader = "lualib/loader.lua"
+luaservice = "./luckynet/?.lua;./service/?.lua"
+snax = "./luckynet/snax/?.lua"
