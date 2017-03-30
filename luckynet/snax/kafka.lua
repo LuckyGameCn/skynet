@@ -1,20 +1,24 @@
 local skynet = require 'skynet'
 local log = require 'lnlog'
 
-function response.xx( ... )
+local subs = {}
+
+function accept.pub(name,...)
 	-- body
+	log.info(name)
+	log.info(...)
 end
 
-function accept.xx( ... )
+function response.sub(name)
 	-- body
 end
 
 function  init( ... )
 	-- body
-	log.info('ladder init.')
+	log.info('kafka init.')
 end
 
 function exit( ... )
 	-- body
-	log.info('ladder exit.')
+	log.info('kafka exit.')
 end
