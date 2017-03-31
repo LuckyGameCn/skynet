@@ -19,5 +19,8 @@ function()
 	})
 
 	snax.newservice('ladder')
+
+	log.info("启动调试服务")
+	skynet.newservice("debug_console",8000)
 end
 	)

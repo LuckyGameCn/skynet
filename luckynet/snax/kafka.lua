@@ -3,14 +3,15 @@ local log = require 'lnlog'
 
 local subs = {}
 
-function accept.pub(name,...)
+function accept.pub(event,...)
 	-- body
 	log.info(name)
 	log.info(...)
 end
 
-function response.sub(name)
+function response.sub(event,name,cmd)
 	-- body
+	
 end
 
 function  init( ... )
