@@ -18,6 +18,8 @@ function()
 		watchdog = wd,
 	})
 
+	skynet.uniqueservice(true,"login")
+
 	snax.newservice('ladder')
 
 	log.info("启动调试服务")

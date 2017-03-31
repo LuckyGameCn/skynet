@@ -9,7 +9,6 @@ local server = {
 	name = "login_master",
 }
 
-local server_list = {}
 local user_online = {}
 local user_login = {}
 
@@ -40,23 +39,8 @@ function server.login_handler(server, uid, secret)
 	return subid
 end
 
-local CMD = {}
-
-function CMD.register_gate(server, address)
-	server_list[server] = address
-end
-
-function CMD.logout(uid, subid)
-	local u = user_online[uid]
-	if u then
-		print(string.format("%s@%s is logout", uid, u.server))
-		user_online[uid] = nil
-	end
-end
-
 function server.command_handler(command, ...)
-	local f = assert(CMD[command])
-	return f(...)
+	
 end
 
 login(server)
