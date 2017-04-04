@@ -1,4 +1,5 @@
 local skynet = require 'skynet'
+local skynet = require 'skynet'
 local log = require 'lnlog'
 local snax = require 'snax'
 

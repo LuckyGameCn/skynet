@@ -1,6 +1,8 @@
 local login = require "snax.loginserver"
 local crypt = require "crypt"
 local skynet = require "skynet"
+local log = require "lnlog"
+local snax = require "snax"
 
 local server = {
 	host = "127.0.0.1",
@@ -10,32 +12,36 @@ local server = {
 }
 
 local user_online = {}
-local user_login = {}
 
 function server.auth_handler(token)
 	-- the token is base64(user)@base64(server):base64(password)
-	local user, server, password = token:match("([^@]+)@([^:]+):(.+)")
+	local user, server, login_type = token:match("([^@]+)@([^:]+):(.+)")
 	user = crypt.base64decode(user)
 	server = crypt.base64decode(server)
-	password = crypt.base64decode(password)
-	assert(password == "password", "Invalid password")
+	login_type = crypt.base64decode(login_type)
+	local visitor = snax.queryglobal("visitor")
+	local user = visitor.req.login(user,login_type)
 	return server, user
 end
 
 function server.login_handler(server, uid, secret)
-	print(string.format("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret)))
-	local gameserver = assert(server_list[server], "Unknown server")
-	-- only one can login, because disallow multilogin
 	local last = user_online[uid]
 	if last then
-		skynet.call(last.address, "lua", "kick", uid, last.subid)
+		local msggate = skynet.queryservice(true,"msggate")
+		skynet.call(msggate,"lua","kick",uid,secret)
+		log.info("user is already online.kick last."..uid)
+	else
+		log.info(string.format("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret)))
 	end
-	if user_online[uid] then
-		error(string.format("user %s is already online", uid))
+	
+	local subid
+	if server == 'msggate_sample' then
+		local msggate = skynet.queryservice(true,"msggate")
+		subid = tostring(skynet.call(msggate, "lua", "login", uid, secret))
 	end
+	
+	user_online[uid] = uid
 
-	local subid = tostring(skynet.call(gameserver, "lua", "login", uid, secret))
-	user_online[uid] = { address = gameserver, subid = subid , server = server}
 	return subid
 end
 

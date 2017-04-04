@@ -6,8 +6,12 @@ local subrepos = {}
 function accept.pub(event,...)
 	-- body
 	local subs = subrepos[event]
-	for i,v in ipairs(subs) do
-		skynet.send(v.addr,'lua',event,v.cmd,...)
+	if subs then
+		for i,v in ipairs(subs) do
+			skynet.send(v.addr,'lua',event,v.cmd,...)
+		end
+	else
+		log.info(event.." has no subscriber.ignore.")
 	end
 end
 
@@ -32,7 +36,7 @@ function accept.unsub(event,addr)
 	if subs then
 		local rindex = -1
 		for i,v in ipairs(subs) do
-			if v.addr = addr then
+			if v.addr == addr then
 				rindex = i
 				break
 			end
