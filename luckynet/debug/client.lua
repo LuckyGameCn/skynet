@@ -167,13 +167,7 @@ print("===>",send_request("again",1))	-- request again (use new session)
 print("<===",recv_response(readpackage()))
 print("<===",recv_response(readpackage()))
 
-while true do
-	line = io.read("L")
-	print("====>",line)
-	send_request(line,2)
-	print("<===",recv_response(readpackage()))
-end
-
 print("disconnect")
 socket.close(fd)
 
+return 
