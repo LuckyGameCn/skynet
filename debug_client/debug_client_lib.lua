@@ -7,17 +7,25 @@ function readPack(sock,decode)
 	if st == "closed" then
 		return nil
 	else
-		if decode==nil then
+		if decode=='b' then
 			local ret = crypt.base64decode(s)
 			print("readPack=>"..ret)
 			return ret
-		elseif decode=="n" then
+		elseif decode==nil then
 			print("readPack=>"..s)
 			return s
 		else
 			error("not support decode type.")
 		end
 	end
+end
+
+function readMSG(sock)
+	-- body
+	local result = readPack(sock)
+	local code = tonumber(string.sub(result, 1, 3))
+	assert(code == 200)
+	return result
 end
 
 function sendPack(sock,content,encode)
