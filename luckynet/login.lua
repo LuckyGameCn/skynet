@@ -38,6 +38,8 @@ function server.login_handler(server, uid, secret)
 	if server == 'msggate_sample' then
 		local msggate = skynet.queryservice(true,"msggate")
 		subid = tostring(skynet.call(msggate, "lua", "login", uid, secret))
+	else
+		log.err("invalide server:"..server)
 	end
 	
 	user_online[uid] = uid
