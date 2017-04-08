@@ -1,3 +1,6 @@
+package.path = "debug_client/?.lua;"..package.path
+package.cpath = "luaclib/?.so;"..package.cpath
+
 local infos = require "debug_client_lib"
 local socket = require "socket"
 local crypt = require "crypt"
