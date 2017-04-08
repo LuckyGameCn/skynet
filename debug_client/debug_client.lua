@@ -68,10 +68,7 @@ function login(uid)
 
 
 	local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid) , infos.msgindex)
-	-- print("send hs:"..handshake)
-	print("secret<"..secret..">")
 	local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
-	print("hmac<"..hmac..">")
 	local en_handshake = handshake .. ":" .. crypt.base64encode(hmac)
 	local hspack = string.pack(">s2", en_handshake)
 
@@ -104,5 +101,4 @@ handleCMD("search "..infos.subid)
 while true do
 	cmds = io.read()
 	handleCMD(cmds)
-	break
 end

@@ -1,6 +1,11 @@
 local crypt = require "crypt"
 local infos = {}
 
+function logD(msg)
+	-- body
+	-- print("[DEBUG]"..msg)
+end
+
 local function unpack_package(text)
 	local size = #text
 	if size < 2 then
@@ -19,9 +24,9 @@ function readOnePack(sock)
 	while true do
 		local ret
 		local last
-		print("[TRY REC]")
-		s,st = sock:receive()
-		print("rec=>"..s)
+		logD("try receive")
+		s,st = sock:receive(1)
+		logD("rec=>"..s)
 		if st == "closed" then
 			return s,st
 		else
@@ -49,10 +54,10 @@ function readPack(sock,decode,unpack_type)
 	else
 		if decode=='b' then
 			local ret = crypt.base64decode(s)
-			print("readPack=>"..ret)
+			logD("readPack=>"..ret)
 			return ret
 		elseif decode==nil then
-			print("readPack=>"..s)
+			logD("readPack=>"..s)
 			return s
 		else
 			error("not support decode type.")
@@ -87,13 +92,13 @@ function sendPack(sock,content,encode)
 	local remain = string.len(text)
 	while remain>0 do
 		local index = sock:send(text)
-		print("send=>"..string.sub(text,1,index))
+		logD("send("..index..")=>"..string.sub(text,1,index))
 		remain = string.len(text) - index
 		if remain>0 then
 			text = string.sub(text,index+1,-1)
 		end
 	end
-	print("sendEDN=>")
+	logD("sendEDN=>")
 end
 
 function string.split(str, delimiter)
