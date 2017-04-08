@@ -66,9 +66,9 @@ local hmac = crypt.hmac64(challenge, secret)
 writeline(fd, crypt.base64encode(hmac))
 
 local token = {
-	server = "sample",
-	user = "hello",
-	pass = "password",
+	server = "msggate_sample",
+	user = "huji",
+	pass = "yk",
 }
 
 local function encode_token(token)
@@ -124,6 +124,7 @@ local readpackage = unpack_f(unpack_package)
 
 local function send_package(fd, pack)
 	local package = string.pack(">s2", pack)
+	-- print("send pack:"..package)
 	socket.send(fd, package)
 end
 
@@ -135,10 +136,14 @@ fd = assert(socket.connect("127.0.0.1", 8888))
 last = ""
 
 local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid) , index)
+print("secret<"..secret..">")
 local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
+print("hmac<"..hmac..">")
 
+local hs = handshake .. ":" .. crypt.base64encode(hmac)
 
-send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
+-- print("send hs:"..hs)
+send_package(fd, hs)
 
 print(readpackage())
 print("===>",send_request(text,0))
@@ -148,24 +153,24 @@ print("===>",send_request(text,0))
 print("disconnect")
 socket.close(fd)
 
-index = index + 1
+-- index = index + 1
 
-print("connect again")
-fd = assert(socket.connect("127.0.0.1", 8888))
-last = ""
+-- print("connect again")
+-- fd = assert(socket.connect("127.0.0.1", 8888))
+-- last = ""
 
-local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid) , index)
-local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
+-- local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid) , index)
+-- local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
 
-send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
+-- send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
 
-print(readpackage())
-print("===>",send_request("fake",0))	-- request again (use last session 0, so the request message is fake)
-print("===>",send_request("again",1))	-- request again (use new session)
-print("<===",recv_response(readpackage()))
-print("<===",recv_response(readpackage()))
+-- print(readpackage())
+-- print("===>",send_request("fake",0))	-- request again (use last session 0, so the request message is fake)
+-- print("===>",send_request("again",1))	-- request again (use new session)
+-- print("<===",recv_response(readpackage()))
+-- print("<===",recv_response(readpackage()))
 
 
-print("disconnect")
-socket.close(fd)
+-- print("disconnect")
+-- socket.close(fd)
 

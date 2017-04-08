@@ -1,5 +1,5 @@
 package.path = "debug_client/?.lua;"..package.path
-package.cpath = "luaclib/?.so;"..package.cpath
+-- package.cpath = "luaclib/?.so;debug_client/?.so;"..package.cpath
 
 local infos = require "debug_client_lib"
 local socket = require "socket"
@@ -31,7 +31,7 @@ function login(uid)
 	local clientkey = crypt.randomkey()
 	local en_clientkey = crypt.dhexchange(clientkey)
 	--写出clientKey
-	sendPack(sock,en_clientkey)
+	sendPack(sock,en_clientkey,'b')
 
 	--读取secret
 	local sec = readPack(sock,'b')
@@ -54,7 +54,7 @@ function login(uid)
 			crypt.base64encode(token.lt))
 	end
 	local etoken = crypt.desencode(secret, encode_token(token))
-	sendPack(sock, etoken)
+	sendPack(sock, etoken,'b')
 
 	local result = readMSG(sock)
 	sock:close()
@@ -66,11 +66,17 @@ function login(uid)
 	infos.subid = subid
 	infos.msgindex = 1
 
+
 	local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid) , infos.msgindex)
+	-- print("send hs:"..handshake)
+	print("secret<"..secret..">")
 	local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
-	local hspack = string.pack(">s2", handshake .. ":" .. crypt.base64encode(hmac))
-	sock:send(hspack)
-	local result = readMSG(sock)
+	print("hmac<"..hmac..">")
+	local en_handshake = handshake .. ":" .. crypt.base64encode(hmac)
+	local hspack = string.pack(">s2", en_handshake)
+
+	sendPack(sock,hspack)
+	local result = readPack(sock,nil,'p')
 	print("handshake=>"..result)
 
 	infos.msgsock = sock

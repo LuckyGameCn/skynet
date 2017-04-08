@@ -1,9 +1,49 @@
 local crypt = require "crypt"
 local infos = {}
 
-function readPack(sock,decode)
+local function unpack_package(text)
+	local size = #text
+	if size < 2 then
+		return nil, text
+	end
+	local s = text:byte(1) * 256 + text:byte(2)
+	if size < s+2 then
+		return nil, text
+	end
+
+	return text:sub(3,2+s), text:sub(3+s)
+end
+
+function readOnePack(sock)
+	-- body
+	while true do
+		local ret
+		local last
+		print("[TRY REC]")
+		s,st = sock:receive()
+		print("rec=>"..s)
+		if st == "closed" then
+			return s,st
+		else
+			ret,last = unpack_package(infos.last..s)
+			infos.last = last
+			if ret then
+				return ret
+			end
+		end
+	end
+end
+
+function readPack(sock,decode,unpack_type)
 	assert(sock,"sock is nil.")
-	s,st = sock:receive("*l")
+	if unpack_type == 'p' then
+		if infos.last==nil then
+			infos.last = ""
+		end
+		s,st = readOnePack(sock)
+	else
+		s,st = sock:receive("*l")
+	end
 	if st == "closed" then
 		return nil
 	else
@@ -31,19 +71,23 @@ end
 function sendPack(sock,content,encode)
 	-- body
 	assert(sock,"sock is nil.")
+	assert(content,"content is nil.")
 	local text = nil
-	if encode == nil then
+	if encode == 'b' then
 		text = crypt.base64encode(content)
+		text = text.."\n"
 	elseif encode == "hb" then
 		text = crypt.hmac64(content,infos.secret)
 		text = crypt.base64encode(text)
+		text = text.."\n"
+	else
+		text = content
 	end
 	print("send<"..text..">")
-	text = text.."\n"
 	local remain = string.len(text)
 	while remain>0 do
-		print("send=>"..text)
 		local index = sock:send(text)
+		print("send=>"..string.sub(text,1,index))
 		remain = string.len(text) - index
 		if remain>0 then
 			text = string.sub(text,index+1,-1)
