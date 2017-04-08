@@ -19,6 +19,12 @@ local function unpack_package(text)
 	return text:sub(3,2+s), text:sub(3+s)
 end
 
+local function recv_response(v)
+	local size = #v - 5
+	local content, ok, session = string.unpack("c"..tostring(size).."B>I4", v)
+	return ok ~=0 , content, session
+end
+
 function readOnePack(sock)
 	-- body
 	while true do
@@ -73,6 +79,13 @@ function readMSG(sock)
 	return result
 end
 
+function readResponse(sock)
+	-- body
+	local ret = readPack(sock,nil,'p')
+	local ok,content,session = recv_response(ret)
+	return content
+end
+
 function sendPack(sock,content,encode)
 	-- body
 	assert(sock,"sock is nil.")
@@ -88,7 +101,7 @@ function sendPack(sock,content,encode)
 	else
 		text = content
 	end
-	print("send<"..text..">")
+	logD("send<"..text..">")
 	local remain = string.len(text)
 	while remain>0 do
 		local index = sock:send(text)
@@ -99,6 +112,23 @@ function sendPack(sock,content,encode)
 		end
 	end
 	logD("sendEDN=>")
+end
+
+function sendRequest(msg)
+	assert(msg)
+	print("[REQ]"..msg)
+	local session = infos.msgindex
+	local sock = infos.msgsock
+
+	local size = #msg + 4
+	local package = string.pack(">I2", size)..msg..string.pack(">I4", session)
+	sendPack(sock,package)
+
+	infos.msgindex = session + 1
+
+	local ret = readResponse(sock)
+	print("[RES]"..ret)
+	return ret
 end
 
 function string.split(str, delimiter)

@@ -5,21 +5,11 @@ local infos = require "debug_client_lib"
 local socket = require "socket"
 local crypt = require "crypt"
 
-local function sendReq(msg)
-	local session = infos.msgindex
-	local sock = infos.msgsock
-
-	local size = #msg + 4
-	local package = string.pack(">I2", size)..msg..string.pack(">I4", session)
-	sock:send(package)
-
-	return readPack(infos.sock)
-end
-
 --search game to join.ladder
 function search(subid)
 	-- body
-	sendReq("text search")
+	local ret = sendRequest(subid)
+	
 end
 
 function login(uid)
@@ -85,7 +75,7 @@ function handleCMD(cmds)
 	local cmd = subs[1]
 	if cmd == 'login' then
 		login(subs[2])
-	elseif cmd == '' then
+	elseif cmd == 'search' then
 		search(subs[2])
 	elseif cmd == '' then
 	elseif cmd == '' then
