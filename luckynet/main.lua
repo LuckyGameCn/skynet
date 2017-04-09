@@ -30,7 +30,7 @@ function()
 
 	skynet.uniqueservice(true,"login")
 
-	snax.newservice('ladder')
+	snax.globalservice('ladder')
 
 	log.info("启动调试服务")
 	skynet.newservice("debug_console",8000)

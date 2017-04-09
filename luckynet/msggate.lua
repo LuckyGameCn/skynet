@@ -1,8 +1,10 @@
 local msgserver = require "snax.msgserver"
 local crypt = require "crypt"
 local skynet = require "skynet"
+local snax = require "snax"
 require "skynet.manager"
 local log = require "lnlog"
+local debug_proto = require "debug_proto"
 
 local server = {}
 
@@ -42,8 +44,18 @@ end
 
 -- call by self (when recv a request from client)
 function server.request_handler(username, msg)
-	log.info("get request:"..username.." - "..msg)
-	return "request_handler"..username..msg
+	msg = debug_proto:decode("req",msg)
+	log.info("get request:"..username.." - "..msg.type)
+	if msg.type == DPROTO_TYEP_LADDERIN then
+		local id = msg.id
+		local agent = snax.queryglobal("agent_game")
+		-- local ret = agent.req.ladderIn(id)
+		return debug_proto:encode("req",{res=true})
+	else
+		local em = "invalide msg =>"..msg
+		log.error(em)
+		return debug_proto:encode("req",{res=false})
+	end
 end
 
 -- call by self (when gate open)

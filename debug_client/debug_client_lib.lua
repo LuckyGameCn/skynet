@@ -6,6 +6,11 @@ function logD(msg)
 	-- print("[DEBUG]"..msg)
 end
 
+function logE(msg)
+	-- body
+	print("[==ERR==]"..msg)
+end
+
 local function unpack_package(text)
 	local size = #text
 	if size < 2 then
@@ -83,7 +88,7 @@ function readResponse(sock)
 	-- body
 	local ret = readPack(sock,nil,'p')
 	local ok,content,session = recv_response(ret)
-	return content
+	return ok,content
 end
 
 function sendPack(sock,content,encode)
@@ -126,9 +131,9 @@ function sendRequest(msg)
 
 	infos.msgindex = session + 1
 
-	local ret = readResponse(sock)
-	print("[RES]"..ret)
-	return ret
+	local ok,ret = readResponse(sock)
+	print("[RES]["..tostring(ok).."]"..ret)
+	return ok,ret
 end
 
 function string.split(str, delimiter)

@@ -148,29 +148,29 @@ send_package(fd, hs)
 print(readpackage())
 print("===>",send_request(text,0))
 -- don't recv response
--- print("<===",recv_response(readpackage()))
+print("<===",recv_response(readpackage()))
 
 print("disconnect")
 socket.close(fd)
 
--- index = index + 1
+index = index + 1
 
--- print("connect again")
--- fd = assert(socket.connect("127.0.0.1", 8888))
--- last = ""
+print("connect again")
+fd = assert(socket.connect("127.0.0.1", 8888))
+last = ""
 
--- local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid) , index)
--- local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
+local handshake = string.format("%s@%s#%s:%d", crypt.base64encode(token.user), crypt.base64encode(token.server),crypt.base64encode(subid) , index)
+local hmac = crypt.hmac64(crypt.hashkey(handshake), secret)
 
--- send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
+send_package(fd, handshake .. ":" .. crypt.base64encode(hmac))
 
--- print(readpackage())
--- print("===>",send_request("fake",0))	-- request again (use last session 0, so the request message is fake)
--- print("===>",send_request("again",1))	-- request again (use new session)
--- print("<===",recv_response(readpackage()))
--- print("<===",recv_response(readpackage()))
+print(readpackage())
+print("===>",send_request("fake",0))	-- request again (use last session 0, so the request message is fake)
+print("===>",send_request("again",1))	-- request again (use new session)
+print("<===",recv_response(readpackage()))
+print("<===",recv_response(readpackage()))
 
 
--- print("disconnect")
--- socket.close(fd)
+print("disconnect")
+socket.close(fd)
 

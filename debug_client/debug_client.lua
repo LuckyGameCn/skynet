@@ -1,15 +1,17 @@
-package.path = "debug_client/?.lua;"..package.path
+package.path = "../luckyproto/?.lua;"..package.path
 -- package.cpath = "luaclib/?.so;debug_client/?.so;"..package.cpath
 
 local infos = require "debug_client_lib"
 local socket = require "socket"
 local crypt = require "crypt"
+local debug_proto = require "debug_proto"
 
 --search game to join.ladder
 function search(subid)
 	-- body
-	local ret = sendRequest(subid)
-	
+	local msg = {type=DPROTO_TYEP_LADDERIN,id=subid}
+	local ok,ret = sendRequest(debug_proto:encode("req",msg))
+	print(ok,ret)
 end
 
 function login(uid)

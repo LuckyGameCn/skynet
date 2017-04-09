@@ -1,8 +1,9 @@
 local skynet = require 'skynet'
 local log = require 'lnlog'
 
-function response.xx( ... )
+function response.ladderIn( ... )
 	-- body
+	return "ladderIn"
 end
 
 function accept.xx( ... )
