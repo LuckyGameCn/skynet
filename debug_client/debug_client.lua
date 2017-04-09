@@ -4,14 +4,27 @@ package.path = "../luckyproto/?.lua;"..package.path
 local infos = require "debug_client_lib"
 local socket = require "socket"
 local crypt = require "crypt"
-local debug_proto = require "debug_proto"
 
 --search game to join.ladder
 function search(subid)
 	-- body
 	local msg = {type=DPROTO_TYEP_LADDERIN,id=subid}
-	local ok,ret = sendRequest(debug_proto:encode("req",msg))
-	print(ok,ret)
+	local ok,ret = sendRequest("req","res",msg)
+	if ok and ret.res then
+		local lid=ret.lid
+		local stid=0
+		while true do
+			msg = {type=DPROTO_TYEP_LADDERRES,id=subid,lid=lid,stid=stid}
+			ok,ret = sendRequest("req","res",msg)
+			lid = ret.lid
+			stid = ret.stid
+			linelist = ret.linelist
+			print("linelist:")
+			logT(linelist)
+		end
+	else
+		print("ladder in fail.try again."..ret.resmsg)
+	end
 end
 
 function login(uid)
@@ -91,6 +104,7 @@ end
 handleCMD("login huji")
 handleCMD("search "..infos.subid)
 while true do
+	print("请输入命令：")
 	cmds = io.read()
 	handleCMD(cmds)
 end

@@ -42,6 +42,11 @@ function server.disconnect_handler(username)
 	
 end
 
+function retRequest(msg)
+	log.info("ret request:"..PrintTable(msg))
+	return debug_proto:encode("res",msg)
+end
+
 -- call by self (when recv a request from client)
 function server.request_handler(username, msg)
 	msg = debug_proto:decode("req",msg)
@@ -49,12 +54,16 @@ function server.request_handler(username, msg)
 	if msg.type == DPROTO_TYEP_LADDERIN then
 		local id = msg.id
 		local agent = snax.queryglobal("agent_game")
-		-- local ret = agent.req.ladderIn(id)
-		return debug_proto:encode("req",{res=true})
+		local ret,lid = agent.req.ladderIn(id)
+		return retRequest({res=ret,lid=lid})
+	elseif msg.type == DPROTO_TYEP_LADDERRES then
+		local agent = snax.queryglobal("agent_game")
+		local lid,stid,list = agent.req.ladderRes(msg.id,msg.lid,msg.stid)
+		return retRequest({res=(lid~=nil),lid=lid,stid=stid,linelist=list})
 	else
 		local em = "invalide msg =>"..msg
 		log.error(em)
-		return debug_proto:encode("req",{res=false})
+		return retRequest({res=false,resmsg=em})
 	end
 end
 

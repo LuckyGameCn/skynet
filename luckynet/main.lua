@@ -7,6 +7,8 @@ function()
 	-- body
 	log.info('luckynet start.')
 
+	snax.globalservice('ladder')
+
 	snax.globalservice('agent_game')
 
 	-- local wd = skynet.newservice('watchdog')
@@ -26,11 +28,7 @@ function()
 		servername = "msggate_sample",
 	})
 
-	snax.globalservice("visitor")
-
 	skynet.uniqueservice(true,"login")
-
-	snax.globalservice('ladder')
 
 	log.info("启动调试服务")
 	skynet.newservice("debug_console",8000)

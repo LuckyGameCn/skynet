@@ -9,6 +9,7 @@ local server = {
 	port = 8001,
 	multilogin = false,	-- disallow multilogin
 	name = "login_master",
+	instance = 1
 }
 
 local user_online = {}
@@ -19,8 +20,8 @@ function server.auth_handler(token)
 	user = crypt.base64decode(user)
 	server = crypt.base64decode(server)
 	login_type = crypt.base64decode(login_type)
-	local visitor = snax.queryglobal("visitor")
-	local user = visitor.req.login(user,login_type)
+	local agent_game = snax.queryglobal("agent_game")
+	local user = agent_game.req.login(user,login_type)
 	return server, user
 end
 
