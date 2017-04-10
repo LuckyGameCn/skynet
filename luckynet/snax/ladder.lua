@@ -1,5 +1,7 @@
 local skynet = require 'skynet'
 local log = require 'lnlog'
+local snax = require 'snax'
+local kafka = require 'kafkaapi'
 
 LADDER_RANGE = 100
 LADDER_LINE_NUM = 10
@@ -16,6 +18,7 @@ function lineForScore(score)
 	end
 
 	local l={}
+	l.ucount=0
 	l.up=0
 	l.down=0
 	l.av=0
@@ -38,18 +41,55 @@ end
 
 function insertLine(line,uid,score)
 	-- body
-	table.insert(line.users,{uid=uid,score=score})
-	line.total = line.total + score
-	line.av = line.total / #(line.users)
-	line.up = line.av + LADDER_RANGE
-	line.down = line.av - LADDER_RANGE
-	line.stid = line.stid + 1
+	updateLine(line,uid,{uid=uid,score=score})
 
 	if #(line.users) >= LADDER_LINE_NUM then
 		log.info("上限到了，通知所有客户端接受游戏")
 	else
 		log.info("通知客户端更新天梯排队列表，或者不通知，这里需要讨论下")
-		skynet.wakeup(skynet.self())
+		skynet.wakeup()
+	end
+end
+
+function updateLine(line,uid,u)
+	-- body
+	local oldu = line.users[uid]
+	line.users[uid] = u
+	if u then
+		line.ucount = line.ucount + 1
+		line.total = line.total + u.score
+	else
+		line.ucount = line.ucount - 1
+		line.total = line.total - oldu.score
+	end
+	line.av = line.total / line.ucount
+	line.up = line.av + LADDER_RANGE
+	line.down = line.av - LADDER_RANGE
+	line.stid = line.stid + 1
+end
+
+function removeUserFromLine(uid)
+	-- body
+	local line
+	local index
+
+	for i,l in ipairs(lines) do
+		if l.users[uid] then
+			line=l
+			index=i
+			break
+		end
+	end
+
+	if line then
+		updateLine(line,uid,nil)
+		log.info("用户%s被移出了天梯队列，通知相应队列的客户端.",uid)
+		skynet.wakeup()
+
+		if line.ucount == 0 then
+			log.info("队列%s没有用户了，删除掉.这里和Res是否存在多线程问题还需要研究下.",line.lid)
+			table.remove(lines,index)
+		end
 	end
 end
 
@@ -72,15 +112,16 @@ function response.Res(uid,lid,stid)
 	assert(line,"查找了一个不存在队列的结果，lid="..lid)
 
 	if stid == line.stid then
+		log.info("队列%s没有变化，挂起",line.lid)
 		skynet.wait()
 	end
 
 	local ret = {}
-	for i,v in ipairs(line.users) do
+	for k,v in pairs(line.users) do
 		table.insert(ret,v.uid)
 	end
 
-	return line.lid,line.stid,ret
+	return line.lid,line.stid,line.av,ret
 end
 
 function accept.xx( ... )
@@ -90,9 +131,22 @@ end
 function  init( ... )
 	-- body
 	log.info('ladder init.')
+
+	kafka.sub("disconnect",function(uid)
+		-- body
+		removeUserFromLine(uid)
+	end)
+
+	kafka.sub("logout",function(uid)
+		-- body
+		removeUserFromLine(uid)
+	end)
 end
 
 function exit( ... )
 	-- body
 	log.info('ladder exit.')
+
+	kafka.unsub("disconnect")
+	kafka.unsub("logout")
 end

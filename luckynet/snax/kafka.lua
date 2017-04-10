@@ -8,27 +8,28 @@ function accept.pub(event,...)
 	local subs = subrepos[event]
 	if subs then
 		for i,v in ipairs(subs) do
-			skynet.send(v.addr,'lua',event,v.cmd,...)
+			skynet.send(v.addr,'lua',event,...)
 		end
 	else
 		log.info(event.." has no subscriber.ignore.")
 	end
 end
 
-function accept.sub(event,addr,cmd)
+function accept.sub(event,addr,callback)
 	-- body
 	local subs = subrepos[event]
 	if not subs then
 		subs = {}
+		subrepos[event] = subs
 	end
 
 	v = {}
 	v.addr = addr
-	v.cmd = cmd
+	v.callback = callback
 
 	table.insert(subs,v)
 
-	lnlog.info("sub "..event.." for "..addr)
+	log.info("订阅事件 "..event.." for "..addr)
 end
 
 function accept.unsub(event,addr)
@@ -43,7 +44,7 @@ function accept.unsub(event,addr)
 		end
 		if rindex>=0 then
 			table.remove(subs,rindex)
-			lnlog.info("unsub "..event.." for "..addr)
+			log.info("unsub "..event.." for "..addr)
 		end
 	end
 end

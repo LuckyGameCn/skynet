@@ -7,6 +7,8 @@ function()
 	-- body
 	log.info('luckynet start.')
 
+	snax.globalservice("kafka")
+
 	snax.globalservice('ladder')
 
 	snax.globalservice('agent_game')

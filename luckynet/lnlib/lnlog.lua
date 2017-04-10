@@ -1,6 +1,6 @@
 local skynet = require 'skynet'
 
-function PrintTable( tbl , level, filteDefault)
+function ptable( tbl , level, filteDefault)
   local retstr =""
   local msg = ""
   filteDefault = filteDefault or true --默认过滤关键字（DeleteMe, _class_type）
@@ -19,14 +19,14 @@ function PrintTable( tbl , level, filteDefault)
         -- print(item_str)
         retstr=retstr..item_str
         if type(v) == "table" then
-          retstr=retstr..PrintTable(v, level + 1)
+          retstr=retstr..ptable(v, level + 1)
         end
       end
     else
       local item_str = string.format("%s%s = %s", indent_str .. " ",tostring(k), tostring(v))
       retstr=retstr..item_str
       if type(v) == "table" then
-        retstr=retstr..PrintTable(v, level + 1)
+        retstr=retstr..ptable(v, level + 1)
       end
     end
   end
@@ -36,12 +36,14 @@ end
 
 local lnlogger = {}
 
-function lnlogger.info(msg)
+function lnlogger.info(...)
+  local msg = string.format(...)
 	-- body
 	skynet.error('[INFO]'..msg)
 end
 
-function lnlogger.error(msg)
+function lnlogger.error(...)
+  local msg = string.format(...)
 	-- body
 	skynet.error('[ERR]'..msg)
 end

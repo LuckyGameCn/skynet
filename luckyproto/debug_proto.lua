@@ -24,7 +24,8 @@ proto.all = sprotoparser.parse [[
 #天梯用
 	lid 3 : integer
 	stid 4 : integer
-	linelist 5 : *string
+	average 5 : integer
+	linelist 6 : *string
 }
 
 ]]

@@ -91,7 +91,7 @@ function handleCMD(cmds)
 	if cmd == 'login' then
 		login(subs[2])
 	elseif cmd == 'search' then
-		search(subs[2])
+		search(infos.subid)
 	elseif cmd == '' then
 	elseif cmd == '' then
 	elseif cmd == '' then
@@ -101,8 +101,8 @@ function handleCMD(cmds)
 	end
 end
 
-handleCMD("login huji")
-handleCMD("search "..infos.subid)
+-- handleCMD("login huji")
+-- handleCMD("search "..infos.subid)
 while true do
 	print("请输入命令：")
 	cmds = io.read()
