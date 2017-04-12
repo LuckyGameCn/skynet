@@ -11,17 +11,21 @@ function search(subid)
 	local msg = {type=DPROTO_TYEP_LADDERIN,id=subid}
 	local ok,ret = sendRequest("req","res",msg)
 	if ok and ret.res then
-		local lid=ret.lid
-		local stid=0
-		while true do
-			msg = {type=DPROTO_TYEP_LADDERRES,id=subid,lid=lid,stid=stid}
-			ok,ret = sendRequest("req","res",msg)
-			lid = ret.lid
-			stid = ret.stid
-			linelist = ret.linelist
-			print("linelist:")
-			logT(linelist)
-		end
+		g_lid=ret.lid
+		g_stid=0
+			fork(function ()
+				-- body
+				while true do
+					msg = {type=DPROTO_TYEP_LADDERRES,id=subid,lid=g_lid,stid=g_stid}
+					ok,ret = sendRequest("req","res",msg)
+					g_lid = ret.lid
+					g_stid = ret.stid
+					linelist = ret.linelist
+					print("linelist:")
+					logT(linelist)
+					socket.select(nil,nil,5)
+				end
+			end)
 	else
 		print("ladder in fail.try again."..ret.resmsg)
 	end

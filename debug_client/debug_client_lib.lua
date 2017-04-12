@@ -2,6 +2,12 @@ local crypt = require "crypt"
 local debug_proto = require "debug_proto"
 local infos = {}
 
+function fork(foo)
+	-- body
+	local co = coroutine.create(foo)
+	coroutine.resume(co)
+end
+
 function PrintTable( tbl , level, filteDefault)
   local retstr =""
   local msg = ""
