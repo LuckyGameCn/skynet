@@ -4,7 +4,7 @@ local snax = require 'snax'
 local kafka = require 'kafkaapi'
 
 LADDER_RANGE = 100
-LADDER_LINE_NUM = 10
+LADDER_LINE_NUM = 2
 
 local lines = {}
 lines.lid = 1
@@ -44,7 +44,7 @@ function insertLine(line,uid,score)
 	-- body
 	updateLine(line,uid,{uid=uid,score=score})
 
-	if #(line.users) >= LADDER_LINE_NUM then
+	if line.ucount >= LADDER_LINE_NUM then
 		line.locked = true
 		log.info("上限到了，通知所有客户端接受游戏")
 	else
@@ -121,23 +121,68 @@ function response.Res(uid,lid,stid)
 
 	if line.locked then
 		if line.users[uid] then
-			return line.lid,-1
+			return true,line.lid,-1
 		else
-			return -1
+			return true,-1
 		end
 	end
 
-	if stid == line.stid then
-		log.info("队列%s没有变化",line.lid)
-		return nil
-	end
+	-- if stid == line.stid then
+	-- 	log.info("队列%s没有变化",line.lid)
+	-- 	return true
+	-- end
 
 	local ret = {}
 	for k,v in pairs(line.users) do
 		table.insert(ret,v.uid)
 	end
 
-	return line.lid,line.stid,line.av,ret
+	return true,line.lid,line.stid,line.av,ret
+end
+
+function response.Con(uid,lid)
+	-- body
+	assert(uid)
+	assert(lid)
+
+	log.info("get confirm %s - %s - %s",uid,lid,ptable(lines))
+
+
+	local line
+	local index
+	local user
+
+	for i,l in ipairs(lines) do
+		if lid == l.lid then
+			line=l
+			index=i
+			user=l.users[uid]
+			break
+		end
+	end
+
+	log.info("line %s user %s",line.lid,user.uid)
+
+	if line and user then
+		user.con = true
+
+		line.allcon = true
+		for k,v in pairs(line.users) do
+			if v.con == false then
+				line.allcon = false
+				break
+			end
+		end
+
+		if line.allcon then
+			return true,true
+		else
+
+			return true,false
+		end
+	else
+		return false,false
+	end
 end
 
 function accept.xx( ... )

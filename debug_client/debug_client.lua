@@ -13,19 +13,52 @@ function search(subid)
 	if ok and ret.res then
 		g_lid=ret.lid
 		g_stid=0
-			fork(function ()
-				-- body
-				while true do
-					msg = {type=DPROTO_TYEP_LADDERRES,id=subid,lid=g_lid,stid=g_stid}
-					ok,ret = sendRequest("req","res",msg)
-					g_lid = ret.lid
-					g_stid = ret.stid
-					linelist = ret.linelist
-					print("linelist:")
-					logT(linelist)
-					socket.select(nil,nil,5)
+		local line_id = nil
+		while true do
+			msg = {type=DPROTO_TYEP_LADDERRES,id=subid,lid=g_lid,stid=g_stid}
+			ok,ret = sendRequest("req","res",msg)
+			if ret.res then
+				if ret.lid == -1 then
+					print("something wrong.quit.")
+					break
+				elseif ret.stid == -1 then
+					print("line is ok.send confirm here.")
+					line_id = ret.lid
+					break
+				else
+					print("normal case.")
 				end
-			end)
+
+				print('no change request again.')
+				g_lid = ret.lid
+				g_stid = ret.stid
+				linelist = ret.linelist
+				print("linelist:")
+				logT(linelist)
+			else
+				print("ladderres some error.quit.")
+				break
+			end
+			socket.select(nil,nil,5)
+		end
+
+		if line_id then
+			while true do
+				local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_LADDERCON,id=subid,lid=line_id})
+				if ret.res then
+					if ret.play_server_add then
+						print("all ready.connect "..ret.play_server_add)
+						break
+					else
+						print("wait for all confirm.query again.")
+						socket.select(nil,nil,5)
+					end
+				else
+					print("some error.quit.")
+					break
+				end
+			end
+		end
 	else
 		print("ladder in fail.try again."..ret.resmsg)
 	end

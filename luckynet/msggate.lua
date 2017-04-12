@@ -16,11 +16,9 @@ function server.login_handler(uid, secret)
 	assert(uid)
 	assert(secret)
 
-	log.info("msggate login "..uid.." - "..secret)
+	log.info("msggate login %s",uid)
 	
 	local username = msgserver.username(uid, uid, servername)
-
-	log.info("username "..username)
 
 	msgserver.login(username, secret)
 
@@ -70,8 +68,12 @@ function server.request_handler(username, msg)
 		return retRequest({res=ret,lid=lid})
 	elseif msg.type == DPROTO_TYEP_LADDERRES then
 		local agent = snax.queryglobal("agent_game")
-		local lid,stid,av,list = agent.req.ladderRes(msg.id,msg.lid,msg.stid)
-		return retRequest({res=(lid~=nil),lid=lid,stid=stid,average=av,linelist=list})
+		local ret,lid,stid,av,list = agent.req.ladderRes(msg.id,msg.lid,msg.stid)
+		return retRequest({res=ret,lid=lid,stid=stid,average=av,linelist=list})
+	elseif msg.type == DPROTO_TYEP_LADDERCON then
+		local agent = snax.queryglobal("agent_game")
+		local ret,addr,port = agent.req.ladderCon(msg.id,msg.lid)
+		return retRequest({res=ret,play_server_add=addr,play_server_port=port})
 	else
 		local em = "invalide msg =>"..msg
 		log.error(em)

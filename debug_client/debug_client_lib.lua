@@ -2,12 +2,6 @@ local crypt = require "crypt"
 local debug_proto = require "debug_proto"
 local infos = {}
 
-function fork(foo)
-	-- body
-	local co = coroutine.create(foo)
-	coroutine.resume(co)
-end
-
 function PrintTable( tbl , level, filteDefault)
   local retstr =""
   local msg = ""
@@ -83,19 +77,20 @@ function readOnePack(sock)
 		local last
 		logD("try receive")
 		local s,st = sock:receive(1)
-			if s then
-				logD("rec=>"..s)
-				if st == "closed" then
+		if s then
+			logD("rec=>"..s)
+			if st == "closed" then
 				return s,st
 			else
 				ret,last = unpack_package(infos.last..s)
 				infos.last = last
 				if ret then
-					return ret
+					return ret,st
 				end
 			end
 		else
 			logE("socket get a nil receive.")
+			return nil,st
 		end
 	end
 end

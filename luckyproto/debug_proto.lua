@@ -1,5 +1,6 @@
 DPROTO_TYEP_LADDERIN = 100
 DPROTO_TYEP_LADDERRES = 101
+DPROTO_TYEP_LADDERCON = 102
 
 local sprotoparser = require "sprotoparser"
 local sproto = require "sproto"
@@ -26,6 +27,10 @@ proto.all = sprotoparser.parse [[
 	stid 4 : integer
 	average 5 : integer
 	linelist 6 : *string
+
+#从天梯进入游戏场景服务
+	play_server_add 7 : string
+	play_server_port 8 : integer
 }
 
 ]]
