@@ -13,20 +13,20 @@ function()
 
 	snax.globalservice('agent_game')
 
-	-- local wd = skynet.newservice('watchdog')
-	-- local gate  = skynet.newservice('gate')
-	-- skynet.call(gate, "lua", "open", {
-	--     address = "127.0.0.1", -- 监听地址 127.0.0.1
-	-- 	port = 8080,    -- 监听端口 8888
-	-- 	maxclient = 1024,   -- 最多允许 1024 个外部连接同时建立
-	-- 	nodelay = true,     -- 给外部连接设置  TCP_NODELAY 属性
-	-- 	watchdog = wd,
-	-- })
+	local wd = skynet.newservice('watchdog')
+	local gate  = skynet.newservice('gate')
+	skynet.call(gate, "lua", "open", {
+	    address = "127.0.0.1", -- 监听地址 127.0.0.1
+		port = 6024,
+		maxclient = 102400,   -- 最多允许 1024 个外部连接同时建立
+		nodelay = true,     -- 给外部连接设置  TCP_NODELAY 属性
+		watchdog = wd,
+	})
 
 	local msggate = skynet.uniqueservice(true,"msggate")
 	skynet.call(msggate, "lua", "open" , {
 		port = 8888,
-		maxclient = 1024,
+		maxclient = 102400,
 		servername = "msggate_sample",
 	})
 

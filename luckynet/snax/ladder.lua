@@ -161,8 +161,6 @@ function response.Con(uid,lid)
 		end
 	end
 
-	log.info("line %s user %s",line.lid,user.uid)
-
 	if line and user then
 		user.con = true
 

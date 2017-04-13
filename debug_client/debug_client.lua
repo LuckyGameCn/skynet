@@ -43,24 +43,45 @@ function search(subid)
 		end
 
 		if line_id then
-			while true do
-				local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_LADDERCON,id=subid,lid=line_id})
-				if ret.res then
-					if ret.play_server_add then
-						print("all ready.connect "..ret.play_server_add)
-						break
-					else
-						print("wait for all confirm.query again.")
-						socket.select(nil,nil,5)
-					end
-				else
-					print("some error.quit.")
-					break
-				end
-			end
+			print("排队人数达到开局标准，输入confirm命令确认.")
+			infos.lid = line_id
 		end
 	else
 		print("ladder in fail.try again."..ret.resmsg)
+	end
+end
+
+function play(addr,port,subid,lid)
+	-- body
+	local sock = socket.connect(addr,port)
+	assert(sock,"connect play server error.")
+
+	sendData(sock,"req",{id=subid,lid=lid})
+end
+
+function confirm(subid,lid)
+	local addr,port
+
+	while true do
+		local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_LADDERCON,id=subid,lid=lid})
+		if ret.res then
+			if ret.play_server_add then
+				print("all ready.connect "..ret.play_server_add)
+				addr = ret.play_server_add
+				port = ret.play_server_port
+				break
+			else
+				print("wait for all confirm.query again in 5s.")
+				socket.select(nil,nil,5)
+			end
+		else
+			print("some error.quit.")
+			break
+		end
+	end
+
+	if addr then
+		play(addr,port,infos.subid,infos.lid)
 	end
 end
 
@@ -129,7 +150,8 @@ function handleCMD(cmds)
 		login(subs[2])
 	elseif cmd == 'search' then
 		search(infos.subid)
-	elseif cmd == '' then
+	elseif cmd == 'confirm' then
+		confirm(infos.subid,infos.lid)
 	elseif cmd == '' then
 	elseif cmd == '' then
 	elseif cmd == '' then

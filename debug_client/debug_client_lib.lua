@@ -165,6 +165,15 @@ function sendPack(sock,content,encode)
 	logD("sendEDN=>")
 end
 
+function sendData(sock,reqtype,msg)
+	-- body
+	msg = debug_proto:encode(reqtype,msg)
+	print("[DATA]("..msg:len()..")"..msg)
+	local size = #msg
+	local package = string.pack(">I2", size)..msg
+	sendPack(sock,package)
+end
+
 function sendRequest(reqtype,restype,msg)
 	assert(reqtype)
 	assert(msg)
