@@ -53,6 +53,7 @@ function gateserver.start(handler)
 	local MSG = {}
 
 	local function dispatch_msg(fd, msg, sz)
+		skynet.error("get msg from "..fd.." sz "..sz)
 		if connection[fd] then
 			handler.message(fd, msg, sz)
 		else

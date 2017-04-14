@@ -24,6 +24,7 @@ function handler.message(fd, msg, sz)
 	if agent then
 		skynet.redirect(agent, c.client, "client", 1, msg, sz)
 	else
+		skynet.error("get msg =====>"..sz)
 		skynet.send(watchdog, "lua", "socket", "data", fd, netpack.tostring(msg, sz))
 	end
 end
