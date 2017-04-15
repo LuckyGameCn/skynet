@@ -76,6 +76,7 @@ function readOnePack(sock)
 		local ret
 		local last
 		logD("try receive")
+		print("try receive")
 		local s,st = sock:receive(1)
 		if s then
 			logD("rec=>"..s)
@@ -120,6 +121,15 @@ function readPack(sock,decode,unpack_type)
 			error("not support decode type.")
 		end
 	end
+end
+
+function readData(sock)
+	-- body
+	local msg = readPack(sock,nil,'p')
+	assert(msg,'readData get nil msg.')
+	local data = debug_proto:decode('data',msg)
+	print("[RDATA]read One Data.type "..data.type)
+	return data
 end
 
 function readMSG(sock)
@@ -168,7 +178,7 @@ end
 function sendData(sock,reqtype,msg)
 	-- body
 	msg = debug_proto:encode(reqtype,msg)
-	print("[DATA]("..msg:len()..")"..msg)
+	print("[SDATA]("..msg:len()..")"..msg)
 	local size = #msg
 	local package = string.pack(">I2", size)..msg
 	sendPack(sock,package)

@@ -161,6 +161,10 @@ function response.Con(uid,lid)
 		end
 	end
 
+	if line and line.allcon then
+		return true,true
+	end
+
 	if line and user then
 		user.con = true
 
@@ -173,7 +177,7 @@ function response.Con(uid,lid)
 		end
 
 		if line.allcon then
-			return true,true
+			return true,true,line.users
 		else
 
 			return true,false

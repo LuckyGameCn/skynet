@@ -13,8 +13,8 @@ function()
 
 	snax.globalservice('agent_game')
 
-	local wd = skynet.newservice('watchdog')
-	skynet.call(wd, "lua", "open", {
+	local wd = skynet.uniqueservice(true,'watchdog')
+	skynet.send(wd, "lua", "open", {
 	    address = "127.0.0.1", -- 监听地址 127.0.0.1
 		port = 6024,
 		maxclient = 102400,   -- 最多允许 1024 个外部连接同时建立

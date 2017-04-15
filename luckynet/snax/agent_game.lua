@@ -1,4 +1,5 @@
 local snax = require 'snax'
+local skynet = require 'skynet'
 local log = require 'lnlog'
 local users = {}
 local ladder = nil
@@ -16,9 +17,14 @@ end
 
 function response.ladderCon(uid,lid)
 	-- body
-	local uservalide,allcon = ladder.req.Con(uid,lid)
+	local uservalide,allcon,alluser = ladder.req.Con(uid,lid)
 	if uservalide then
 		if allcon then
+			if alluser then
+				local wd = skynet.queryservice(true,"watchdog")
+				skynet.call(wd,"lua","open_agent",lid,alluser)
+			end
+
 			return true,"127.0.0.1",6024
 		else
 			return true

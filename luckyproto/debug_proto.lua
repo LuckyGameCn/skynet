@@ -2,12 +2,18 @@ DPROTO_TYEP_LADDERIN = 100
 DPROTO_TYEP_LADDERRES = 101
 DPROTO_TYEP_LADDERCON = 102
 
+DPROTO_TYEP_DATA_INIT = 10
+
 local sprotoparser = require "sprotoparser"
 local sproto = require "sproto"
 
 local proto = {}
 
 proto.all = sprotoparser.parse [[
+
+.data{
+	type 1 : integer
+}
 
 .req{
 	type 1 : integer

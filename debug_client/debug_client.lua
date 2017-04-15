@@ -51,12 +51,29 @@ function search(subid)
 	end
 end
 
+function getDataFromLonglink(sock,f)
+	-- body
+	local co = coroutine.create(function (sock,f)
+		-- body
+		while true do
+			local msg = readData(sock)
+			f(msg)
+		end
+	end)
+	coroutine.resume(co,sock,f)
+end
+
 function play(addr,port,subid,lid)
 	-- body
 	local sock = socket.connect(addr,port)
 	assert(sock,"connect play server error.")
 
-	sendData(sock,"req",{id=subid,lid=lid})
+	sendData(sock,"req",{type=DPROTO_TYEP_DATA_INIT,id=subid,lid=lid})
+
+	getDataFromLonglink(sock,function (msg)
+		-- body
+		print("get data type "..msg.type)
+	end)
 end
 
 function confirm(subid,lid)
@@ -160,8 +177,9 @@ function handleCMD(cmds)
 	end
 end
 
--- handleCMD("login huji")
--- handleCMD("search "..infos.subid)
+handleCMD("login "..crypt.randomkey())
+handleCMD("search "..infos.subid)
+handleCMD(string.format("confirm %s %s",infos.subid,infos.lid))
 while true do
 	print("请输入命令：")
 	cmds = io.read()
