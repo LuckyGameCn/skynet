@@ -21,7 +21,6 @@ function handler.message(fd, msg, sz)
 	-- recv a package, forward it
 	local c = connection[fd]
 	local agent = c.agent
-	skynet.error("get msg =====>"..sz)
 	if agent then
 		skynet.redirect(agent, c.client, "client", 1, msg, sz)
 	else
