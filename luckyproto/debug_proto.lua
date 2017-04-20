@@ -3,6 +3,8 @@ DPROTO_TYEP_LADDERRES = 101
 DPROTO_TYEP_LADDERCON = 102
 
 DPROTO_TYEP_DATA_INIT = 10
+DPROTO_TYEP_DATA = 11
+DPROTO_TYEP_DATA_END = 12
 
 local sprotoparser = require "sprotoparser"
 local sproto = require "sproto"

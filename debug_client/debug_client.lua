@@ -51,16 +51,13 @@ function search(subid)
 	end
 end
 
-function getDataFromLonglink(sock,f)
+function getDataFromLonglink(f)
 	-- body
-	local co = coroutine.create(function (sock,f)
+	local co = coroutine.create(function (f)
 		-- body
-		while true do
-			local msg = readData(sock)
-			f(msg)
-		end
+		f()
 	end)
-	coroutine.resume(co,sock,f)
+	coroutine.resume(co,f)
 end
 
 function play(addr,port,subid,lid)
@@ -70,9 +67,19 @@ function play(addr,port,subid,lid)
 
 	sendData(sock,"req",{type=DPROTO_TYEP_DATA_INIT,id=subid,lid=lid})
 
-	getDataFromLonglink(sock,function (msg)
+	getDataFromLonglink(function ()
 		-- body
-		print("get data type "..msg.type)
+		while true do
+			local msg = readData(sock)
+			print("get data type "..msg.type)
+			if msg.type == DPROTO_TYEP_DATA then
+				sendData(sock,"data",{type=DPROTO_TYEP_DATA})
+			else
+				sendData(sock,"data",{type=DPROTO_TYEP_DATA_END})
+				break
+			end
+		end
+		
 	end)
 end
 

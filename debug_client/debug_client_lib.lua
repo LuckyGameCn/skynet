@@ -76,7 +76,6 @@ function readOnePack(sock)
 		local ret
 		local last
 		logD("try receive")
-		print("try receive")
 		local s,st = sock:receive(1)
 		if s then
 			logD("rec=>"..s)

@@ -5,6 +5,7 @@ local debug_proto = require "debug_proto"
 local gate
 local handshake = {}
 local agents = {}
+local forward = {}
 
 local SOCKET = {}
 function SOCKET.open(fd, addr)
@@ -32,9 +33,7 @@ function SOCKET.data(fd,msg)
 			local agent = agents[lid]
 			if agent then
 				agent.post.connect(lid,uid,fd)
-				
-				skynet.call(gate, "lua", "forward", fd,handshake[fd],agent)
-
+				forward[fd] = agent
 				handshake[fd] = nil
 			else
 				log.error("can not find play agent.")
@@ -43,7 +42,12 @@ function SOCKET.data(fd,msg)
 			log.error("here only accept init type.")
 		end
 	else
-		log.error("msg should be forward.")
+		local agent = forward[fd]
+		if agent then
+			agent.post.data(fd,msg)
+		else
+			log.error("msg should be forward.")
+		end
 	end
 end
 
@@ -62,7 +66,7 @@ skynet.start(function ()
 	-- body
 	skynet.dispatch("lua", function(session, source, cmd, subcmd, ...)
 		if cmd == "socket" then
-			log.info("socket %s %s",cmd,subcmd)
+			log.debug("get cmd %s",cmd)
 			SOCKET[subcmd](...)
 		else
 			local ret = CMD[cmd](subcmd,...)
