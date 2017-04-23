@@ -2,6 +2,7 @@ local skynet = require 'skynet'
 local log = require 'lnlog'
 local snax = require 'snax'
 local debug_proto = require "debug_proto"
+local kafka = require "kafkaapi"
 local gate
 local handshake = {}
 local agents = {}
@@ -12,6 +13,12 @@ function SOCKET.open(fd, addr)
 	log.info("New client from : " .. addr)
 	handshake[fd] = addr
 	skynet.call(gate,"lua","accept",fd)
+
+	-- kafka.sub("exitGame",function (uid,fd)
+	-- 	-- body
+	-- 	skynet.call(gate,"lua","kick",fd)
+	-- 	forward[fd]	= nil
+	-- end)
 end
 function SOCKET.close(fd)
 	-- body
@@ -66,7 +73,7 @@ skynet.start(function ()
 	-- body
 	skynet.dispatch("lua", function(session, source, cmd, subcmd, ...)
 		if cmd == "socket" then
-			log.debug("get cmd %s",cmd)
+			log.debug("get cmd %s %s",cmd,subcmd)
 			SOCKET[subcmd](...)
 		else
 			local ret = CMD[cmd](subcmd,...)

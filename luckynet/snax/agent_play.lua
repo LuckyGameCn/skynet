@@ -3,37 +3,58 @@ local netpack = require 'netpack'
 local log = require 'lnlog'
 local debug_proto = require "debug_proto"
 local socket = require 'socket'
+local snax = require 'snax'
+local kafka = require 'kafkaapi'
 
 local ag_lid
-local ag_users
+local ag_users = {}
 local ag_allready = false
 
 local ag_msg = 0
 
 function sendToAll(msg)
 	-- body
-	log.info("send msg to all.")
+	log.info("send msg to all."..msg.type)
 	msg = debug_proto:encode("data",msg)
 	local pack = string.pack(">s2", msg)
-	for k,v in pairs(ag_users) do
+	for k,v in pairs(ag_users.list) do
 		socket.write(v.fd,pack)
 	end
 
 	ag_msg = ag_msg + 1
 end
 
+function exitGame(uid)
+	local u = ag_users.list[uid]
+	kafka.pub("exitGame",uid,u.fd)
+	log.info("这里的消息暂时因为嵌套使用没有解决，以后再解决.")
+
+	ag_users.count = ag_users.count - 1
+
+	if ag_users.count == 0 then
+		log.info("agent_game end.lid=%d",ag_lid)
+		snax.exit()
+	end
+end
+
 function accept.data(fd,msg)
-	log.info("get msg from user.")
+	msg = debug_proto:decode("data",msg)
+
+	log.info("get msg %d from user %s.",msg.type,msg.id)
+
+	if msg.type == DPROTO_TYEP_DATA_END then
+		exitGame(msg.id)
+	end
 end
 
 function accept.connect(lid,uid,fd)
 	-- body
 	assert(lid==ag_lid,"lid not match.")
-	assert(ag_users[uid],"uid not in users.")
+	assert(ag_users.list[uid],"uid not in users.")
 
 	log.info("user %s connect agentplay.",uid)
 
-	local u = ag_users[uid]
+	local u = ag_users.list[uid]
 	u.ready = true
 	u.fd = fd
 
@@ -41,7 +62,7 @@ function accept.connect(lid,uid,fd)
 		log.info("all ready.do noting.这个用户可能是重连进来的，需要设计崩溃恢复的逻辑.")
 	else
 		local result = true
-		for k,v in pairs(ag_users) do
+		for k,v in pairs(ag_users.list) do
 			if v.ready then
 			else
 				result=false
@@ -56,7 +77,8 @@ function accept.connect(lid,uid,fd)
 
 			skynet.fork(function()
 				while true do
-					if ag_msg > 10 then
+					log.info("ag_msg %s",ag_msg)
+					if ag_msg < 10 then
 						local msg = {type=DPROTO_TYEP_DATA}
 						sendToAll(msg)
 					else
@@ -82,8 +104,12 @@ function  init(lid,users)
 	log.info('agentplay init.lid %s.',lid)
 
 	ag_lid = lid
-	ag_users = users
-
+	ag_users.list = users
+	local count = 0
+	for k,v in pairs(ag_users.list) do
+		count = count + 1
+	end
+	ag_users.count = count
 end
 
 function exit( ... )

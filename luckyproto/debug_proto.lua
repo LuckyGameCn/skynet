@@ -15,6 +15,7 @@ proto.all = sprotoparser.parse [[
 
 .data{
 	type 1 : integer
+	id 2 : string
 }
 
 .req{
