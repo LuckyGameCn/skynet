@@ -24,6 +24,8 @@ function server.login_handler(uid, secret)
 
 	users[username] = {uid = uid}
 
+	kafka.pub("login",uid)
+
 	-- you should return unique subid
 	return uid
 end

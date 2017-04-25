@@ -1,52 +1,45 @@
 local skynet = require 'skynet'
 local log = require 'lnlog'
+local mc = require "multicast"
 
 local subrepos = {}
 
 function accept.pub(event,...)
 	-- body
-	local subs = subrepos[event]
-	if subs then
-		for i,v in ipairs(subs) do
-			skynet.send(v.addr,'lua',event,...)
-		end
+	local channel = subrepos[event]
+	if channel then
+		channel:publish(...)
 	else
 		log.info(event.." has no subscriber.ignore.")
 	end
 end
 
-function accept.sub(event,addr,callback)
+function response.sub(event)
 	-- body
-	local subs = subrepos[event]
+	local chan = subrepos[event]
 	if not subs then
-		subs = {}
-		subrepos[event] = subs
+		chan = mc.new()
+		subrepos[event] = chan
 	end
-
-	v = {}
-	v.addr = addr
-	v.callback = callback
-
-	table.insert(subs,v)
-
-	log.info("订阅事件 "..event.." for "..addr)
+	return chan.channel
 end
 
 function accept.unsub(event,addr)
-	local subs = subrepos[event]
-	if subs then
-		local rindex = -1
-		for i,v in ipairs(subs) do
-			if v.addr == addr then
-				rindex = i
-				break
-			end
-		end
-		if rindex>=0 then
-			table.remove(subs,rindex)
-			log.info("unsub "..event.." for "..addr)
-		end
-	end
+	-- local subs = subrepos[event]
+	-- if subs then
+	-- 	local rindex = -1
+	-- 	for i,v in ipairs(subs) do
+	-- 		if v.addr == addr then
+	-- 			rindex = i
+	-- 			break
+	-- 		end
+	-- 	end
+	-- 	if rindex>=0 then
+	-- 		table.remove(subs,rindex)
+	-- 		log.info("unsub "..event.." for "..addr)
+	-- 	end
+	-- end
+	
 end
 
 function  init( ... )

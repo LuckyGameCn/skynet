@@ -13,6 +13,8 @@ function()
 
 	snax.globalservice('agent_game')
 
+	snax.globalservice('agent_user')
+
 	local wd = skynet.uniqueservice(true,'watchdog')
 	skynet.send(wd, "lua", "open", {
 	    address = "127.0.0.1", -- 监听地址 127.0.0.1
