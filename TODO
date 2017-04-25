@@ -1,10 +1,13 @@
 (DONE)1.登陆server
-(doing)2.基于msgserver的gameserver-主要是收到loginserver的登陆成功消息，从mysql加载用户数据，和游戏的场景选择进行交互
+(DONE)2.基于msgserver的gameserver-主要是收到loginserver的登陆成功消息，从mysql加载用户数据，和游戏的场景选择进行交互
 (DONE)3.天梯排队server，ladder，当玩家选择天梯以后，进入这个server排队，匹配成功以后，转到playserver进行一局游戏
 4.playserver基于gate的一种service，主要用于玩家在游戏中的数据互通，游戏逻辑等,这个server可以分为两部分，一部分是玩家数据广播和回显，对每个游戏基本是通用的，另外是游戏逻辑部分，每个游戏可以单独写
 (DONE)5.基于skynet的调试client
 6.server协议加载使用loader
 7.session重登陆msggate.
 8.游戏开始后崩溃恢复的逻辑还没有
+9.用户登出
+10.正常退出skynet进程，保存用户数据
+11.redis数据写磁盘
 
 

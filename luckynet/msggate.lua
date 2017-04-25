@@ -9,6 +9,7 @@ local kafka = require "kafkaapi"
 
 local server = {}
 local users = {}
+local agent
 
 -- login server disallow multi login, so login_handler never be reentry
 -- call by login server
@@ -25,6 +26,7 @@ function server.login_handler(uid, secret)
 	users[username] = {uid = uid}
 
 	kafka.pub("login",uid)
+	agent.req.login(uid)
 
 	-- you should return unique subid
 	return uid
@@ -65,15 +67,12 @@ function server.request_handler(username, msg)
 	log.info("get request["..users[username].uid.."] - "..msg.type)
 	if msg.type == DPROTO_TYEP_LADDERIN then
 		local id = msg.id
-		local agent = snax.queryglobal("agent_game")
 		local ret,lid = agent.req.ladderIn(id)
 		return retRequest({res=ret,lid=lid})
 	elseif msg.type == DPROTO_TYEP_LADDERRES then
-		local agent = snax.queryglobal("agent_game")
 		local ret,lid,stid,av,list = agent.req.ladderRes(msg.id,msg.lid,msg.stid)
 		return retRequest({res=ret,lid=lid,stid=stid,average=av,linelist=list})
 	elseif msg.type == DPROTO_TYEP_LADDERCON then
-		local agent = snax.queryglobal("agent_game")
 		local ret,addr,port = agent.req.ladderCon(msg.id,msg.lid)
 		return retRequest({res=ret,play_server_add=addr,play_server_port=port})
 	else
@@ -87,6 +86,8 @@ end
 function server.register_handler(name)
 	servername = name
 	log.info("msgserver "..name.." has opened.")
+
+	agent = snax.queryglobal("agent_game")
 end
 
 msgserver.start(server)

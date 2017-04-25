@@ -20,8 +20,6 @@ function server.auth_handler(token)
 	user = crypt.base64decode(user)
 	server = crypt.base64decode(server)
 	login_type = crypt.base64decode(login_type)
-	local agent_game = snax.queryglobal("agent_game")
-	local user = agent_game.req.login(user,login_type)
 	return server, user
 end
 

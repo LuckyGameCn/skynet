@@ -24,23 +24,8 @@ function response.sub(event)
 	return chan.channel
 end
 
-function accept.unsub(event,addr)
-	-- local subs = subrepos[event]
-	-- if subs then
-	-- 	local rindex = -1
-	-- 	for i,v in ipairs(subs) do
-	-- 		if v.addr == addr then
-	-- 			rindex = i
-	-- 			break
-	-- 		end
-	-- 	end
-	-- 	if rindex>=0 then
-	-- 		table.remove(subs,rindex)
-	-- 		log.info("unsub "..event.." for "..addr)
-	-- 	end
-	-- end
-	
-end
+-- function accept.unsub(event,addr)
+-- end
 
 function  init( ... )
 	-- body

@@ -13,12 +13,6 @@ function SOCKET.open(fd, addr)
 	log.info("New client from : " .. addr)
 	handshake[fd] = addr
 	skynet.call(gate,"lua","accept",fd)
-
-	-- kafka.sub("exitGame",function (uid,fd)
-	-- 	-- body
-	-- 	skynet.call(gate,"lua","kick",fd)
-	-- 	forward[fd]	= nil
-	-- end)
 end
 function SOCKET.close(fd)
 	-- body
@@ -84,4 +78,12 @@ skynet.start(function ()
 	log.info("watch dog start.")
 
 	gate = skynet.newservice("gate")
+
+	kafka.sub("exitGame",function (uid,fd)
+		-- body
+		log.info("用户 %s 完成游戏，踢出gate.",uid)
+		
+		skynet.call(gate,"lua","kick",fd)
+		forward[fd]	= nil
+	end)
 end)

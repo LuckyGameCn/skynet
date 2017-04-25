@@ -172,9 +172,9 @@ function handleCMD(cmds)
 	end
 end
 
-handleCMD("login "..crypt.randomkey())
-handleCMD("search "..infos.subid)
-handleCMD(string.format("confirm %s %s",infos.subid,infos.lid))
+-- handleCMD("login "..crypt.randomkey())
+-- handleCMD("search "..infos.subid)
+-- handleCMD(string.format("confirm %s %s",infos.subid,infos.lid))
 while true do
 	print("请输入命令：")
 	cmds = io.read()

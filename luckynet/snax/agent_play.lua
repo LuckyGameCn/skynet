@@ -27,13 +27,26 @@ end
 function exitGame(uid)
 	local u = ag_users.list[uid]
 	kafka.pub("exitGame",uid,u.fd)
-	log.info("这里的消息暂时因为嵌套使用没有解决，以后再解决.")
 
 	ag_users.count = ag_users.count - 1
 
 	if ag_users.count == 0 then
 		log.info("agent_game end.lid=%d",ag_lid)
 		snax.exit()
+	end
+end
+
+function gameOver()
+	-- body
+	local msg = {type=DPROTO_TYEP_DATA_END}
+	sendToAll(msg)
+
+	local agent_user = snax.queryglobal("agent_user")
+	for k,v in pairs(ag_users.list) do
+		local dt = math.random(-10,10)
+		v.score = v.score + dt
+		log.info("set user %s score %d",k,v.score)
+		agent_user.post.set(k,v.score)
 	end
 end
 
@@ -78,15 +91,14 @@ function accept.connect(lid,uid,fd)
 			skynet.fork(function()
 				while true do
 					log.info("ag_msg %s",ag_msg)
-					if ag_msg < 10 then
+					if ag_msg < 5 then
 						local msg = {type=DPROTO_TYEP_DATA}
 						sendToAll(msg)
 					else
-						local msg = {type=DPROTO_TYEP_DATA_END}
-						sendToAll(msg)
+						gameOver()
 						break
 					end
-					skynet.sleep(500)
+					skynet.sleep(200)
 				end
 			end)
 		end

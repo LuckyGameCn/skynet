@@ -1,6 +1,6 @@
-local skynet = require "skynet"
 local snax = require "snax"
 local mc = require "multicast"
+local log = require "lnlog"
 
 local subscribers = {}
 
@@ -13,8 +13,10 @@ end
 
 function kafkaapi.sub(event,callback)
 
+	assert(not subscribers[event])
+
 	local kafka = snax.queryglobal("kafka")
-	local cid = kafka.post.sub(event,skynet.self())
+	local cid = kafka.req.sub(event)
 
 	local c = mc.new({channel = cid,
 				dispatch = function (channel, source, ...) 
@@ -22,17 +24,15 @@ function kafkaapi.sub(event,callback)
 				end,}
 	)
 	c:subscribe()
-	local key = event..addr
-	subscribers[key] = c
+	
+	subscribers[event] = c
 
-	log.info("订阅事件 "..event.." for "..addr)
+	log.info("订阅事件 "..event)
 	
 end
 
 function kafkaapi.unsub(event)
 	-- body
-	-- local kafka = snax.queryglobal("kafka")
-	-- kafka.post.unsub(event,skynet.self())
 	local key = event..addr
 	local c = subscribers[key]
 	c:unsubscribe()

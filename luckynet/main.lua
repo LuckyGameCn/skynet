@@ -11,9 +11,9 @@ function()
 
 	snax.globalservice('ladder')
 
-	snax.globalservice('agent_game')
-
 	snax.globalservice('agent_user')
+
+	snax.globalservice('agent_game')
 
 	local wd = skynet.uniqueservice(true,'watchdog')
 	skynet.send(wd, "lua", "open", {

@@ -1,12 +1,12 @@
 local snax = require 'snax'
 local skynet = require 'skynet'
 local log = require 'lnlog'
-local users = {}
+local agent_user = nil
 local ladder = nil
 
 function response.ladderIn(uid)
 	-- body
-	local u = users[uid]
+	local u = agent_user.req.getu(uid)
 	return ladder.req.In(uid,u.score)
 end
 
@@ -38,12 +38,10 @@ function accept.xx( ... )
 	-- body
 end
 
-function response.login(uid,login_type)
+function response.login(uid)
 	-- body
-	local u = {}
-	u.score = 500
 
-	users[uid] = u
+	agent_user.post.readu(uid)
 
 	return uid
 end
@@ -53,6 +51,7 @@ function  init( ... )
 	log.info('game agent init.')
 
 	ladder = snax.queryglobal("ladder")
+	agent_user = snax.queryglobal("agent_user")
 end
 
 function exit( ... )
