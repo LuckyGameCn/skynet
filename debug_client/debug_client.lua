@@ -11,40 +11,25 @@ function search(subid)
 	local msg = {type=DPROTO_TYEP_LADDERIN,id=subid}
 	local ok,ret = sendRequest("req","res",msg)
 	if ok and ret.res then
-		g_lid=ret.lid
-		g_stid=0
-		local line_id = nil
-		while true do
-			msg = {type=DPROTO_TYEP_LADDERRES,id=subid,lid=g_lid,stid=g_stid}
-			ok,ret = sendRequest("req","res",msg)
-			if ret.res then
-				if ret.lid == -1 then
-					print("something wrong.quit.")
-					break
-				elseif ret.stid == -1 then
-					print("line is ok.send confirm here.")
-					line_id = ret.lid
-					break
-				else
-					print("normal case.")
-				end
+		local line_id
 
-				print('no change request again.')
-				g_lid = ret.lid
-				g_stid = ret.stid
-				linelist = ret.linelist
-				print("linelist:")
-				logT(linelist)
+		while true do
+			msg = {type=DPROTO_TYEP_PUSH}
+			ok,ret = sendRequest("req","res",msg)
+			if ret.type == DPROTO_TYEP_LADDERCON then
+				line_id = ret.lid
+				break
 			else
-				print("ladderres some error.quit.")
+				print("发生了某种错误，退出排队")
 				break
 			end
-			socket.select(nil,nil,5)
 		end
 
 		if line_id then
 			print("排队人数达到开局标准，输入confirm命令确认.")
 			infos.lid = line_id
+		else
+			print("排队的时候发生了某种错误.")
 		end
 	else
 		print("ladder in fail.try again."..ret.resmsg)
@@ -74,26 +59,35 @@ end
 function confirm(subid,lid)
 	local addr,port
 
-	while true do
-		local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_LADDERCON,id=subid,lid=lid})
-		if ret.res then
-			if ret.play_server_add then
+	local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_LADDERCON,id=subid,lid=lid})
+	if ret.res then
+		while true do
+			local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_PUSH})
+			if ret.type == DPROTO_TYEP_LADDEROK then
 				print("all ready.connect "..ret.play_server_add)
 				addr = ret.play_server_add
 				port = ret.play_server_port
 				break
+			elseif ret.type == DPROTO_TYEP_LADDERCON then
+				print("用户 "..ret.uid.." 确认")
+			elseif ret.type == DPROTO_TYEP_LADDERIN then
+				print("有人没有确认开始，重新开始排队")
+				break
 			else
-				print("wait for all confirm.query again in 5s.")
-				socket.select(nil,nil,5)
+				print("some error.quit.")
+				break
 			end
-		else
-			print("some error.quit.")
-			break
 		end
+	else
+		print(ret.resmsg)
 	end
 
 	if addr then
 		play(addr,port,infos.subid,infos.lid)
+	else
+		if ret.type == DPROTO_TYEP_LADDERIN  then
+			search(subid)
+		end
 	end
 end
 

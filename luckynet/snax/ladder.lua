@@ -3,11 +3,20 @@ local log = require 'lnlog'
 local snax = require 'snax'
 local kafka = require 'kafkaapi'
 
+local pusher
+
 LADDER_RANGE = 100
-LADDER_LINE_NUM = 2
+LADDER_LINE_NUM = 3
 
 local lines = {}
 lines.lid = 1
+
+function notifyLine( line,msg )
+	-- body
+	for k,v in pairs(line.users) do
+		pusher.post.push(k,msg)
+	end
+end
 
 function lineForScore(score)
 	-- body
@@ -46,9 +55,11 @@ function insertLine(line,uid,score)
 
 	if line.ucount >= LADDER_LINE_NUM then
 		line.locked = true
-		log.info("上限到了，通知所有客户端接受游戏")
+		log.info("上限到了，通知所有客户端接受游戏，这里没有处理超时的情况.")
+		local msg = {type=DPROTO_TYEP_LADDERCON}
+		notifyLine(line,msg)
 	else
-		log.info("通知客户端更新天梯排队列表，或者不通知，这里需要讨论下")
+		log.info("队列%s有%s加入，平均分为%d",line.lid,uid,line.av)
 	end
 end
 
@@ -100,7 +111,7 @@ function removeUserFromLine(uid)
 
 	if line then
 		updateLine(line,uid,nil)
-		log.info("用户%s被移出了天梯队列，通知相应队列的客户端.",uid)
+		log.info("用户%s被移出了天梯队列，这里没有考虑lock的情况，可能有问题.",uid)
 
 		if line.ucount == 0 then
 			log.info("队列%s没有用户了，删除掉.这里和Res是否存在多线程问题还需要研究下.",line.lid)
@@ -116,44 +127,11 @@ function response.In(uid,score)
 
 	if line.users[uid] then
 		log.error("队列中存在了相同uid的用户.%s",uid)
-		return false
+		return DPROTO_TYEP_FAIL,"same user in again."
 	end
 
 	insertLine(line,uid,score)
-	return true,line.lid
-end
-
-function response.Res(uid,lid,stid)
-	assert(lid,"请求的lid为空.")
-
-	local line
-	for i,l in ipairs(lines) do
-		if l.lid == lid then
-			line = l
-			break
-		end
-	end
-	assert(line,"查找了一个不存在队列的结果，lid="..lid)
-
-	if line.locked then
-		if line.users[uid] then
-			return true,line.lid,-1
-		else
-			return true,-1
-		end
-	end
-
-	-- if stid == line.stid then
-	-- 	log.info("队列%s没有变化",line.lid)
-	-- 	return true
-	-- end
-
-	local ret = {}
-	for k,v in pairs(line.users) do
-		table.insert(ret,v.uid)
-	end
-
-	return true,line.lid,line.stid,line.av,ret
+	return DPROTO_TYEP_OK,line.lid
 end
 
 function response.Con(uid,lid)
@@ -177,31 +155,38 @@ function response.Con(uid,lid)
 		end
 	end
 
-	if line and line.allcon then
-		return true,true
+	if not user then
+		return DPROTO_TYEP_FAIL,"找不到用户 "..uid
 	end
 
-	if line and user then
-		user.con = true
-
-		line.allcon = true
-		for k,v in pairs(line.users) do
-			if v.con ~= true then
-				line.allcon = false
-				break
-			end
-		end
-
-		if line.allcon then
-			--这里暂时用返回所有用户隐士表达了全部确认的情况，只会出现一次，可以优化
-			return true,true,line.users
-		else
-
-			return true,false
-		end
-	else
-		return false,false
+	if user.con == true then
+		return DPROTO_TYEP_OK
 	end
+
+	if not line then
+		return DPROTO_TYEP_FAIL,"找不到队列 "..lid
+	end
+
+	user.con = true
+	local msg = {type=DPROTO_TYEP_LADDERCON,uid=uid}
+	notifyLine(line,msg)
+
+	local allcon = true
+	for k,v in pairs(line.users) do
+		if v.con ~= true then
+			allcon = false
+			break
+		end
+	end
+
+	if allcon then
+		log.info("通知客户端全部准备完毕lid=%s",lid)
+		kafka.pub("ladder_all_confirm",lid,line.av,line.users)
+
+		removeLine(lid)
+	end
+
+	return DPROTO_TYEP_OK
 end
 
 function accept.xx( ... )
@@ -211,6 +196,8 @@ end
 function  init( ... )
 	-- body
 	log.info('ladder init.')
+
+	pusher = snax.queryglobal("pusher")
 
 	kafka.sub("disconnect",function(uid)
 		-- body
@@ -222,10 +209,6 @@ function  init( ... )
 		removeUserFromLine(uid)
 	end)
 
-	kafka.sub("open_agent",function ( lid )
-		-- body
-		removeLine(lid)
-	end)
 end
 
 function exit( ... )
@@ -234,5 +217,4 @@ function exit( ... )
 
 	kafka.unsub("disconnect")
 	kafka.unsub("logout")
-	kafka.unsub("open_agent")
 end

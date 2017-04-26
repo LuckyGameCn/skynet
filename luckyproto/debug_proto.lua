@@ -1,12 +1,3 @@
-DPROTO_TYEP_LOGOUT = 1
-DPROTO_TYEP_LADDERIN = 100
-DPROTO_TYEP_LADDERRES = 101
-DPROTO_TYEP_LADDERCON = 102
-
-DPROTO_TYEP_DATA_INIT = 10
-DPROTO_TYEP_DATA = 11
-DPROTO_TYEP_DATA_END = 12
-
 local sprotoparser = require "sprotoparser"
 local sproto = require "sproto"
 
@@ -28,15 +19,20 @@ proto.all = sprotoparser.parse [[
 	stid 4 : integer
 }
 
+.user{
+	uid 1 : string
+	score 2 : integer
+}
+
 .res{
-	res 1 : boolean
+	res 1 : integer
 	resmsg 2 : string
 
 #天梯用
 	lid 3 : integer
-	stid 4 : integer
+	uid 4 : string
 	average 5 : integer
-	linelist 6 : *string
+	linelist 6 : *user
 
 #从天梯进入游戏场景服务
 	play_server_add 7 : string

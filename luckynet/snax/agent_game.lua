@@ -2,6 +2,7 @@ local snax = require 'snax'
 local skynet = require 'skynet'
 local log = require 'lnlog'
 local kafka = require 'kafkaapi'
+
 local agent_user = nil
 local ladder = nil
 
@@ -11,31 +12,9 @@ function response.ladderIn(uid)
 	return ladder.req.In(uid,u.score)
 end
 
-function response.ladderRes(uid,lid,stid)
-	-- body
-	return ladder.req.Res(uid,lid,stid)
-end
-
 function response.ladderCon(uid,lid)
 	-- body
-	local uservalide,allcon,alluser = ladder.req.Con(uid,lid)
-	if uservalide then
-		if allcon then
-			if alluser then
-				local wd = skynet.queryservice(true,"watchdog")
-				skynet.call(wd,"lua","open_agent",lid,alluser)
-
-				--这里利用返回alluser表明确认天梯队列全部确认，在这里可以移除该队列了，先用kafka发个广播
-				-- kafka.pub("open_agent",lid)
-			end
-
-			return true,"127.0.0.1",6024
-		else
-			return true
-		end
-	else
-		return false
-	end
+	return ladder.req.Con(uid,lid)
 end
 
 function accept.xx( ... )
@@ -48,9 +27,25 @@ function  init( ... )
 
 	ladder = snax.queryglobal("ladder")
 	agent_user = snax.queryglobal("agent_user")
+
+	kafka.sub("ladder_all_confirm",function ( lid,av,users )
+		-- body
+		local wd = skynet.queryservice(true,"watchdog")
+		skynet.call(wd,"lua","open_agent",lid,users)
+
+		local msg = {type=DPROTO_TYEP_LADDEROK,average=av,linelist=users,play_server_add="127.0.0.1",play_server_port=6024}
+
+		local pusher = snax.queryglobal("pusher")
+		for k,v in pairs(users) do
+			pusher.post.push(k,msg)
+		end
+
+	end)
 end
 
 function exit( ... )
 	-- body
 	log.info('game agent exit.')
+
+	kafka.unsub("ladder_all_confirm")
 end

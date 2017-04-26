@@ -1,6 +1,8 @@
 local skynet = require 'skynet'
 
 function ptable( tbl , level, filteDefault)
+  assert(tbl)
+  
   local retstr =""
   local msg = ""
   filteDefault = filteDefault or true --默认过滤关键字（DeleteMe, _class_type）

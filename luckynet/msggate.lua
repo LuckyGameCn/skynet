@@ -23,7 +23,7 @@ function server.login_handler(uid, secret)
 
 	msgserver.login(username, secret)
 
-	users[username] = {uid = uid}
+	users[username] = uid
 
 	kafka.pub("login",uid)
 
@@ -48,14 +48,16 @@ end
 
 -- call by self (when socket disconnect)
 function server.disconnect_handler(username)
-	local user = users[username]
+	local uid = users[username]
 
-	log.info("user:%s disconnect.",user.uid)
+	log.info("user:%s disconnect.",uid)
 
-	kafka.pub("disconnect",user.uid)
+	kafka.pub("disconnect",uid)
 end
 
 function retRequest(msg)
+	assert(msg)
+
 	log.info("ret request:"..ptable(msg))
 	return debug_proto:encode("res",msg)
 end
@@ -63,25 +65,25 @@ end
 -- call by self (when recv a request from client)
 function server.request_handler(username, msg)
 	msg = debug_proto:decode("req",msg)
-	log.info("get request["..users[username].uid.."] - "..msg.type)
+	log.info("get request["..users[username].."] - "..msg.type)
 	if msg.type == DPROTO_TYEP_LADDERIN then
 		local id = msg.id
 		local ret,lid = agent.req.ladderIn(id)
 		return retRequest({res=ret,lid=lid})
-	elseif msg.type == DPROTO_TYEP_LADDERRES then
-		local ret,lid,stid,av,list = agent.req.ladderRes(msg.id,msg.lid,msg.stid)
-		return retRequest({res=ret,lid=lid,stid=stid,average=av,linelist=list})
 	elseif msg.type == DPROTO_TYEP_LADDERCON then
-		local ret,addr,port = agent.req.ladderCon(msg.id,msg.lid)
-		return retRequest({res=ret,play_server_add=addr,play_server_port=port})
+		local ret,resmsg = agent.req.ladderCon(msg.id,msg.lid)
+		return retRequest({res=ret,resmsg=resmsg})
 	elseif msg.type == DPROTO_TYEP_LOGOUT then
-		local user = users[username]
-		server.kick_handler(user.uid,user.uid)
-		return retRequest({res=true})
+		local uid = users[username]
+		server.kick_handler(uid,uid)
+		return retRequest({res=DPROTO_TYEP_OK})
+	elseif msg.type == DPROTO_TYEP_PUSH then
+		local pusher = snax.queryglobal("pusher")
+		return retRequest(pusher.req.getpush(users[username]))
 	else
 		local em = "invalide msg =>"..msg
 		log.error(em)
-		return retRequest({res=false,resmsg=em})
+		return retRequest({res=DPROTO_TYEP_FAIL,resmsg=em})
 	end
 end
 

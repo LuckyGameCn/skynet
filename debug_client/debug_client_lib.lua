@@ -180,8 +180,8 @@ end
 
 function sendData(sock,reqtype,msg)
 	-- body
+	print("[SDATA]("..msg:len()..")"..PrintTable(msg))
 	msg = debug_proto:encode(reqtype,msg)
-	print("[SDATA]("..msg:len()..")"..msg)
 	local size = #msg
 	local package = string.pack(">I2", size)..msg
 	sendPack(sock,package)
@@ -190,8 +190,8 @@ end
 function sendRequest(reqtype,restype,msg)
 	assert(reqtype)
 	assert(msg)
+	print("[REQ]"..PrintTable(msg))
 	msg = debug_proto:encode(reqtype,msg)
-	print("[REQ]("..msg:len()..")"..msg)
 	local session = infos.msgindex
 	local sock = infos.msgsock
 
@@ -205,8 +205,8 @@ function sendRequest(reqtype,restype,msg)
 	if ok == false then
 		assert(nil,"服务端返回数据有误.")
 	end
-	print("[RES]["..tostring(ok).."]("..ret:len()..")"..ret)
 	ret = debug_proto:decode(restype,ret)
+	print("[RES]["..tostring(ok).."]"..PrintTable(ret))
 	return ok,ret
 end
 
