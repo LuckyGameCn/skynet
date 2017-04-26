@@ -180,7 +180,7 @@ end
 
 function sendData(sock,reqtype,msg)
 	-- body
-	print("[SDATA]("..msg:len()..")"..PrintTable(msg))
+	print("[SDATA]"..PrintTable(msg))
 	msg = debug_proto:encode(reqtype,msg)
 	local size = #msg
 	local package = string.pack(">I2", size)..msg

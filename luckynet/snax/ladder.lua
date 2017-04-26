@@ -56,7 +56,7 @@ function insertLine(line,uid,score)
 	if line.ucount >= LADDER_LINE_NUM then
 		line.locked = true
 		log.info("上限到了，通知所有客户端接受游戏，这里没有处理超时的情况.")
-		local msg = {type=DPROTO_TYEP_LADDERCON}
+		local msg = {type=DPROTO_TYEP_LADDERCON,lid=line.lid}
 		notifyLine(line,msg)
 	else
 		log.info("队列%s有%s加入，平均分为%d",line.lid,uid,line.av)
@@ -168,7 +168,7 @@ function response.Con(uid,lid)
 	end
 
 	user.con = true
-	local msg = {type=DPROTO_TYEP_LADDERCON,uid=uid}
+	local msg = {type=DPROTO_TYEP_LADDERREADY,uid=uid}
 	notifyLine(line,msg)
 
 	local allcon = true

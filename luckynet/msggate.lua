@@ -57,33 +57,34 @@ end
 
 function retRequest(msg)
 	assert(msg)
+	assert(msg.type)
 
-	log.info("ret request:"..ptable(msg))
+	log.info("ret :"..ptable(msg))
 	return debug_proto:encode("res",msg)
 end
 
 -- call by self (when recv a request from client)
 function server.request_handler(username, msg)
 	msg = debug_proto:decode("req",msg)
-	log.info("get request["..users[username].."] - "..msg.type)
+	log.info("get ["..users[username].."] - "..msg.type)
 	if msg.type == DPROTO_TYEP_LADDERIN then
 		local id = msg.id
 		local ret,lid = agent.req.ladderIn(id)
-		return retRequest({res=ret,lid=lid})
+		return retRequest({type=ret,lid=lid})
 	elseif msg.type == DPROTO_TYEP_LADDERCON then
 		local ret,resmsg = agent.req.ladderCon(msg.id,msg.lid)
-		return retRequest({res=ret,resmsg=resmsg})
+		return retRequest({type=ret,resmsg=resmsg})
 	elseif msg.type == DPROTO_TYEP_LOGOUT then
 		local uid = users[username]
 		server.kick_handler(uid,uid)
-		return retRequest({res=DPROTO_TYEP_OK})
+		return retRequest({type=DPROTO_TYEP_OK})
 	elseif msg.type == DPROTO_TYEP_PUSH then
 		local pusher = snax.queryglobal("pusher")
 		return retRequest(pusher.req.getpush(users[username]))
 	else
 		local em = "invalide msg =>"..msg
 		log.error(em)
-		return retRequest({res=DPROTO_TYEP_FAIL,resmsg=em})
+		return retRequest({type=DPROTO_TYEP_FAIL,resmsg=em})
 	end
 end
 

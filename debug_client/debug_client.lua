@@ -10,7 +10,7 @@ function search(subid)
 	-- body
 	local msg = {type=DPROTO_TYEP_LADDERIN,id=subid}
 	local ok,ret = sendRequest("req","res",msg)
-	if ok and ret.res then
+	if ok and ret.type == DPROTO_TYEP_OK  then
 		local line_id
 
 		while true do
@@ -60,7 +60,7 @@ function confirm(subid,lid)
 	local addr,port
 
 	local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_LADDERCON,id=subid,lid=lid})
-	if ret.res then
+	if ret.type == DPROTO_TYEP_OK then
 		while true do
 			local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_PUSH})
 			if ret.type == DPROTO_TYEP_LADDEROK then
@@ -68,7 +68,7 @@ function confirm(subid,lid)
 				addr = ret.play_server_add
 				port = ret.play_server_port
 				break
-			elseif ret.type == DPROTO_TYEP_LADDERCON then
+			elseif ret.type == DPROTO_TYEP_LADDERREADY then
 				print("用户 "..ret.uid.." 确认")
 			elseif ret.type == DPROTO_TYEP_LADDERIN then
 				print("有人没有确认开始，重新开始排队")
@@ -152,7 +152,7 @@ function logout(  )
 	-- body
 	local msg = {type=DPROTO_TYEP_LOGOUT}
 	local ok,ret = sendRequest("req","res",msg)
-	if ret.res then
+	if ret.type == DPROTO_TYEP_OK then
 		print("退出登陆成功")
 	else
 		print("退出登陆失败")

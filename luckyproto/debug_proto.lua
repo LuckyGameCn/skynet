@@ -1,3 +1,19 @@
+DPROTO_TYEP_OK = 0
+DPROTO_TYEP_FAIL = -1
+
+DPROTO_TYEP_LOGOUT = 1
+DPROTO_TYEP_PUSH = 2
+
+DPROTO_TYEP_LADDERIN = 100
+DPROTO_TYEP_LADDERREADY = 101
+DPROTO_TYEP_LADDERCON = 102
+
+DPROTO_TYEP_LADDEROK = 103 --天梯全部确认完毕
+
+DPROTO_TYEP_DATA_INIT = 10
+DPROTO_TYEP_DATA = 11
+DPROTO_TYEP_DATA_END = 12
+
 local sprotoparser = require "sprotoparser"
 local sproto = require "sproto"
 
@@ -16,7 +32,6 @@ proto.all = sprotoparser.parse [[
 
 #天梯用
 	lid 3 : integer
-	stid 4 : integer
 }
 
 .user{
@@ -25,7 +40,7 @@ proto.all = sprotoparser.parse [[
 }
 
 .res{
-	res 1 : integer
+	type 1 : integer
 	resmsg 2 : string
 
 #天梯用
