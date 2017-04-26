@@ -142,6 +142,10 @@ end
 function readResponse(sock)
 	-- body
 	local ret = readPack(sock,nil,'p')
+	if ret ==nil then
+		return false
+	end
+	
 	local ok,content,session = recv_response(ret)
 	return ok,content
 end

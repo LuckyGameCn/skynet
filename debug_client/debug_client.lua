@@ -154,17 +154,29 @@ function login(uid)
 	infos.msgsock = sock
 end
 
+function logout(  )
+	-- body
+	local msg = {type=DPROTO_TYEP_LOGOUT}
+	local ok,ret = sendRequest("req","res",msg)
+	if ret.res then
+		print("退出登陆成功")
+	else
+		print("退出登陆失败")
+	end
+end
+
 function handleCMD(cmds)
 	print("[CMD]"..cmds)
 	local subs = string.split(cmds," ")
 	local cmd = subs[1]
-	if cmd == 'login' then
+	if cmd == 'login' or cmd == 'ln' then
 		login(subs[2])
-	elseif cmd == 'search' then
+	elseif cmd == 'search' or cmd == 's' then
 		search(infos.subid)
-	elseif cmd == 'confirm' then
+	elseif cmd == 'confirm' or cmd == 'c' then
 		confirm(infos.subid,infos.lid)
-	elseif cmd == '' then
+	elseif cmd == 'logout' or cmd == 'lt' then
+		logout()
 	elseif cmd == '' then
 	elseif cmd == '' then
 	else
@@ -172,10 +184,20 @@ function handleCMD(cmds)
 	end
 end
 
+info = [[
+登陆 login[ln] [username]
+退出登陆 logout[lt]
+寻找天梯 search[s]
+确认天梯 confirm[c]
+]]
+-- handleCMD("login jj")
+-- handleCMD("logout")
+
 -- handleCMD("login "..crypt.randomkey())
 -- handleCMD("search "..infos.subid)
 -- handleCMD(string.format("confirm %s %s",infos.subid,infos.lid))
 while true do
+	print(info)
 	print("请输入命令：")
 	cmds = io.read()
 	handleCMD(cmds)

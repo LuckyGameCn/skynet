@@ -1,6 +1,7 @@
 local snax = require 'snax'
 local skynet = require 'skynet'
 local log = require 'lnlog'
+local kafka = require 'kafkaapi'
 local agent_user = nil
 local ladder = nil
 
@@ -23,6 +24,9 @@ function response.ladderCon(uid,lid)
 			if alluser then
 				local wd = skynet.queryservice(true,"watchdog")
 				skynet.call(wd,"lua","open_agent",lid,alluser)
+
+				--这里利用返回alluser表明确认天梯队列全部确认，在这里可以移除该队列了，先用kafka发个广播
+				-- kafka.pub("open_agent",lid)
 			end
 
 			return true,"127.0.0.1",6024
@@ -36,14 +40,6 @@ end
 
 function accept.xx( ... )
 	-- body
-end
-
-function response.login(uid)
-	-- body
-
-	agent_user.post.readu(uid)
-
-	return uid
 end
 
 function  init( ... )

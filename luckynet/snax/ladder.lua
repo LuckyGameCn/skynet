@@ -69,6 +69,22 @@ function updateLine(line,uid,u)
 	line.stid = line.stid + 1
 end
 
+function removeLine( lid )
+	-- body
+	local index
+	for i,l in ipairs(lines) do
+		if l.lid == lid then
+			index=i
+			break
+		end
+	end
+
+	if index then
+		log.info("游戏开始了，可以移除该队列了.lid %s",lid)
+		table.remove(lines,index)
+	end
+end
+
 function removeUserFromLine(uid)
 	-- body
 	local line
@@ -170,13 +186,14 @@ function response.Con(uid,lid)
 
 		line.allcon = true
 		for k,v in pairs(line.users) do
-			if v.con == false then
+			if v.con ~= true then
 				line.allcon = false
 				break
 			end
 		end
 
 		if line.allcon then
+			--这里暂时用返回所有用户隐士表达了全部确认的情况，只会出现一次，可以优化
 			return true,true,line.users
 		else
 
@@ -204,6 +221,11 @@ function  init( ... )
 		-- body
 		removeUserFromLine(uid)
 	end)
+
+	kafka.sub("open_agent",function ( lid )
+		-- body
+		removeLine(lid)
+	end)
 end
 
 function exit( ... )
@@ -212,4 +234,5 @@ function exit( ... )
 
 	kafka.unsub("disconnect")
 	kafka.unsub("logout")
+	kafka.unsub("open_agent")
 end

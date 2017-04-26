@@ -46,7 +46,7 @@ function gameOver()
 		local dt = math.random(-10,10)
 		v.score = v.score + dt
 		log.info("set user %s score %d",k,v.score)
-		agent_user.post.set(k,v.score)
+		agent_user.post.saveScore(k,v.score)
 	end
 end
 

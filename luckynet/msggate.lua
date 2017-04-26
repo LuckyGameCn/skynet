@@ -26,7 +26,6 @@ function server.login_handler(uid, secret)
 	users[username] = {uid = uid}
 
 	kafka.pub("login",uid)
-	agent.req.login(uid)
 
 	-- you should return unique subid
 	return uid
@@ -75,6 +74,10 @@ function server.request_handler(username, msg)
 	elseif msg.type == DPROTO_TYEP_LADDERCON then
 		local ret,addr,port = agent.req.ladderCon(msg.id,msg.lid)
 		return retRequest({res=ret,play_server_add=addr,play_server_port=port})
+	elseif msg.type == DPROTO_TYEP_LOGOUT then
+		local user = users[username]
+		server.kick_handler(user.uid,user.uid)
+		return retRequest({res=true})
 	else
 		local em = "invalide msg =>"..msg
 		log.error(em)

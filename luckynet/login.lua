@@ -27,7 +27,7 @@ function server.login_handler(server, uid, secret)
 	local last = user_online[uid]
 	if last then
 		local msggate = skynet.queryservice(true,"msggate")
-		skynet.call(msggate,"lua","kick",uid,secret)
+		skynet.call(msggate,"lua","kick",uid,uid)
 		log.info("user is already online.kick last."..uid)
 	else
 		log.info(string.format("%s@%s is login, secret is %s", uid, server, crypt.hexencode(secret)))
