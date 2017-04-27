@@ -2,6 +2,7 @@ local skynet = require 'skynet'
 local log = require 'lnlog'
 local snax = require 'snax'
 local kafka = require 'kafkaapi'
+require 'util'
 
 local pusher
 
@@ -58,6 +59,28 @@ function insertLine(line,uid,score)
 		log.info("上限到了，通知所有客户端接受游戏，这里没有处理超时的情况.")
 		local msg = {type=DPROTO_TYEP_LADDERCON,lid=line.lid}
 		notifyLine(line,msg)
+
+		local cancel = cancelable_timeout(500,function (  )
+			-- body
+			log.info("ladder timeout.lid="..line.lid)
+
+			for k,v in pairs(line.users) do
+				if v.con ~= true then
+					log.info("user %s timeout.lid %d",k,line.lid)
+					line.users[k] = nil
+				else
+					log.info("notify user %s someone confirm timeout.lid %d",k,line.lid)
+					local msg = {type=DPROTO_TYEP_LADDERIN}
+					pusher.post.push(k,msg)
+					v.con = false
+				end
+			end
+
+			line.locked = false
+
+		end)
+		line.timeout = cancel
+
 	else
 		log.info("队列%s有%s加入，平均分为%s",line.lid,uid,tostring(line.av))
 	end
@@ -169,6 +192,10 @@ function response.Con(uid,lid)
 		return DPROTO_TYEP_FAIL,"找不到队列 "..lid
 	end
 
+	if line.locked == false then
+		return DPROTO_TYEP_FAIL,"还没有匹配成功 "..lid
+	end
+
 	user.con = true
 	local msg = {type=DPROTO_TYEP_LADDERREADY,uid=uid}
 	notifyLine(line,msg)
@@ -183,6 +210,11 @@ function response.Con(uid,lid)
 
 	if allcon then
 		log.info("通知客户端全部准备完毕lid=%s",lid)
+
+		if line.timeout then
+			line.timeout()
+		end
+
 		kafka.pub("ladder_all_confirm",lid,line.av,line.users)
 
 		removeLine(lid)

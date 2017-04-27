@@ -11,7 +11,7 @@ function search(subid)
 		print("login first.")
 		return
 	end
-	
+
 	-- body
 	local msg = {type=DPROTO_TYEP_LADDERIN,id=subid}
 	local ok,ret = sendRequest("req","res",msg)
