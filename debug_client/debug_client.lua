@@ -184,6 +184,7 @@ function handleCMD(cmds)
 end
 
 info = [[
+
 登陆 login[ln] [username]
 退出登陆 logout[lt]
 寻找天梯 search[s]
