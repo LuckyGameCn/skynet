@@ -55,11 +55,11 @@ function server.disconnect_handler(username)
 	kafka.pub("disconnect",uid)
 end
 
-function retRequest(msg)
-	assert(msg)
-	assert(msg.type)
+function retRequest(uid,msg)
+	assert(msg,"msg nil of user "..uid)
+	assert(msg.type,"msg type of user "..uid)
 
-	log.info("ret :"..ptable(msg))
+	log.info("ret [%s] %s",uid,ptable(msg))
 	return debug_proto:encode("res",msg)
 end
 
@@ -70,17 +70,17 @@ function server.request_handler(username, msg)
 	if msg.type == DPROTO_TYEP_LADDERIN then
 		local id = msg.id
 		local ret,lid = agent.req.ladderIn(id)
-		return retRequest({type=ret,lid=lid})
+		return retRequest(id,{type=ret,lid=lid})
 	elseif msg.type == DPROTO_TYEP_LADDERCON then
 		local ret,resmsg = agent.req.ladderCon(msg.id,msg.lid)
-		return retRequest({type=ret,resmsg=resmsg})
+		return retRequest(msg.id,{type=ret,resmsg=resmsg})
 	elseif msg.type == DPROTO_TYEP_LOGOUT then
 		local uid = users[username]
 		server.kick_handler(uid,uid)
-		return retRequest({type=DPROTO_TYEP_OK})
+		return retRequest(uid,{type=DPROTO_TYEP_OK})
 	elseif msg.type == DPROTO_TYEP_PUSH then
 		local pusher = snax.queryglobal("pusher")
-		return retRequest(pusher.req.getpush(users[username]))
+		return retRequest(users[username],pusher.req.getpush(users[username]))
 	else
 		local em = "invalide msg =>"..msg
 		log.error(em)

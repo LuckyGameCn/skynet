@@ -7,6 +7,11 @@ local crypt = require "crypt"
 
 --search game to join.ladder
 function search(subid)
+	if not subid then
+		print("login first.")
+		return
+	end
+	
 	-- body
 	local msg = {type=DPROTO_TYEP_LADDERIN,id=subid}
 	local ok,ret = sendRequest("req","res",msg)

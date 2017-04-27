@@ -15,7 +15,8 @@ function dequeue( uid )
 	end
 end
 
-function queue( uid,msg )
+function enqueue( uid,msg )
+	assert(msg,"can not enqueue nil msg.uid="..uid)
 	-- body
 	local q = pushes[uid]
 	if q == nil then
@@ -23,7 +24,7 @@ function queue( uid,msg )
 		pushes[uid] = q
 	end
 
-	table.insert(q,msg)
+	table.insert(q,1,msg)
 end
 
 function response.getpush(uid)
@@ -49,9 +50,12 @@ function accept.push( uid,msg )
 	assert(uid)
 	assert(msg)
 
-	queue(uid,msg)
+	enqueue(uid,msg)
+	
 	local co = crs[uid]
+
 	if co then
+		crs[uid] = nil
 		skynet.wakeup(co)
 	end
 end

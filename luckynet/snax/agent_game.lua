@@ -33,7 +33,7 @@ function  init( ... )
 		local wd = skynet.queryservice(true,"watchdog")
 		skynet.call(wd,"lua","open_agent",lid,users)
 
-		local msg = {type=DPROTO_TYEP_LADDEROK,average=av,linelist=users,play_server_add="127.0.0.1",play_server_port=6024}
+		local msg = {type=DPROTO_TYEP_LADDEROK,average=tostring(av),linelist=users,play_server_add="127.0.0.1",play_server_port=6024}
 
 		local pusher = snax.queryglobal("pusher")
 		for k,v in pairs(users) do

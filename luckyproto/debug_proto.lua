@@ -46,7 +46,7 @@ proto.all = sprotoparser.parse [[
 #天梯用
 	lid 3 : integer
 	uid 4 : string
-	average 5 : integer
+	average 5 : string
 	linelist 6 : *user
 
 #从天梯进入游戏场景服务

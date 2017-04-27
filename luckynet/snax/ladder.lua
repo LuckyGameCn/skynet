@@ -59,7 +59,7 @@ function insertLine(line,uid,score)
 		local msg = {type=DPROTO_TYEP_LADDERCON,lid=line.lid}
 		notifyLine(line,msg)
 	else
-		log.info("队列%s有%s加入，平均分为%d",line.lid,uid,line.av)
+		log.info("队列%s有%s加入，平均分为%s",line.lid,uid,tostring(line.av))
 	end
 end
 
@@ -137,7 +137,9 @@ end
 function response.Con(uid,lid)
 	-- body
 	assert(uid)
-	assert(lid)
+	if not lid then
+		return DPROTO_TYEP_FAIL,"lid 为空."
+	end
 
 	log.info("get confirm %s - %s - %s",uid,lid,ptable(lines))
 
