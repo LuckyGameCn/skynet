@@ -9,8 +9,10 @@ local pusher
 LADDER_RANGE = 100
 LADDER_LINE_NUM = 3
 
-local lines = {}
-lines.lid = 1
+local ladder = {}
+ladder.lines = {} --queue
+ladder.linemap = {}
+ladder.lid = 1
 
 function notifyLine( line,msg )
 	-- body
@@ -20,6 +22,8 @@ function notifyLine( line,msg )
 end
 
 function lineForScore(score)
+	local lines = ladder.lines
+	local linemap = ladder.linemap
 	-- body
 	for i,l in ipairs(lines) do
 		if score<l.up and score>l.down and l.locked == false then
@@ -35,15 +39,17 @@ function lineForScore(score)
 	l.av=0
 	l.total=0
 	l.users={}
-	l.stid = 1
-	l.lid = lines.lid
-	lines.lid = lines.lid + 1
-	if lines.lid == 999999 then
-		lines.lid = 1
-		log.info("里程碑，lines.lid重置了.")
+	l.lid = ladder.lid
+	ladder.lid = l.lid + 1
+	if ladder.lid == 999999 then
+		ladder.lid = 1
+		log.info("里程碑，ladder.lid重置了.")
 	end
 
 	table.insert(lines,l)
+
+	l.indexInLines = #lines
+	linemap[l.lid] = l
 
 	log.info(string.format("新建了一个天梯队列 lid=%s",l.lid))
 
@@ -60,14 +66,14 @@ function insertLine(line,uid,score)
 		local msg = {type=DPROTO_TYEP_LADDERCON,lid=line.lid}
 		notifyLine(line,msg)
 
-		local cancel = cancelable_timeout(500,function (  )
+		local cancel = cancelable_timeout(2000,function (  )
 			-- body
 			log.info("ladder timeout.lid="..line.lid)
 
 			for k,v in pairs(line.users) do
 				if v.con ~= true then
 					log.info("user %s timeout.lid %d",k,line.lid)
-					line.users[k] = nil
+					removeUserInLine(line,k)
 				else
 					log.info("notify user %s someone confirm timeout.lid %d",k,line.lid)
 					local msg = {type=DPROTO_TYEP_LADDERIN}
@@ -100,22 +106,18 @@ function updateLine(line,uid,u)
 	line.av = line.total / line.ucount
 	line.up = line.av + LADDER_RANGE
 	line.down = line.av - LADDER_RANGE
-	line.stid = line.stid + 1
 end
 
 function removeLine( lid )
 	-- body
-	local index
-	for i,l in ipairs(lines) do
-		if l.lid == lid then
-			index=i
-			break
-		end
-	end
+	local line = ladder.linemap[lid]
 
-	if index then
-		log.info("游戏开始了，可以移除该队列了.lid %s",lid)
-		table.remove(lines,index)
+	if line then
+		local index = line.indexInLines
+		table.remove(ladder.lines,index)
+		ladder.linemap[lid] = nil
+
+		log.info("移除队列.lid %s",lid)
 	end
 end
 
@@ -124,7 +126,7 @@ function removeUserFromLine(uid)
 	local line
 	local index
 
-	for i,l in ipairs(lines) do
+	for i,l in ipairs(ladder.lines) do
 		if l.users[uid] then
 			line=l
 			index=i
@@ -133,13 +135,21 @@ function removeUserFromLine(uid)
 	end
 
 	if line then
-		updateLine(line,uid,nil)
-		log.info("用户%s被移出了天梯队列，这里没有考虑lock的情况，可能有问题.",uid)
+		removeUserInLine(line,uid)
+	end
+end
 
-		if line.ucount == 0 then
-			log.info("队列%s没有用户了，删除掉.这里和Res是否存在多线程问题还需要研究下.",line.lid)
-			table.remove(lines,index)
-		end
+function removeUserInLine( line,uid )
+	-- body
+	assert(line)
+	assert(uid)
+
+	updateLine(line,uid,nil)
+	log.info("用户%s被移出了天梯队列，这里没有考虑lock的情况，可能有问题.",uid)
+
+	if line.ucount == 0 then
+		log.info("队列%s没有用户了，删除掉.这里和Res是否存在多线程问题还需要研究下.",line.lid)
+		table.remove(ladder.lines,line.indexInLines)
 	end
 end
 
@@ -164,21 +174,9 @@ function response.Con(uid,lid)
 		return DPROTO_TYEP_FAIL,"lid 为空."
 	end
 
-	log.info("get confirm %s - %s - %s",uid,lid,ptable(lines))
-
-
-	local line
-	local index
-	local user
-
-	for i,l in ipairs(lines) do
-		if lid == l.lid then
-			line=l
-			index=i
-			user=l.users[uid]
-			break
-		end
-	end
+	local line = ladder.linemap[lid]
+	local index = line.indexInLines
+	local user = line.users[uid]
 
 	if not user then
 		return DPROTO_TYEP_FAIL,"找不到用户 "..uid

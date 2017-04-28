@@ -66,7 +66,7 @@ end
 -- call by self (when recv a request from client)
 function server.request_handler(username, msg)
 	msg = debug_proto:decode("req",msg)
-	log.info("get ["..users[username].."] - "..msg.type)
+	log.info("get ["..users[username].."] %s",ptable(msg))
 	if msg.type == DPROTO_TYEP_LADDERIN then
 		local id = msg.id
 		local ret,lid = agent.req.ladderIn(id)
