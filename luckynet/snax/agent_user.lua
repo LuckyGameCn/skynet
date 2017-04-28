@@ -7,6 +7,10 @@ local users = {}
 
 function redis_unpack(msg)
 	-- body
+	if #msg ==0 then
+		return nil
+	end
+
 	local obj = {}
 	for i=1,#msg,2 do
 		local k = msg[i]
@@ -34,11 +38,11 @@ end
 function readUserDataToMem( uid )
 	-- body
 	local u = redis_unpack(db:hgetall(uid))
-	log.info("redis user %s.",ptable(u))
-	if u.uid == nil then
+	if u == nil then
 		log.info("user %s not exsit.init.",uid)
 		u = initUser(uid)
 	else
+		log.info("redis user %s.",ptable(u))
 		log.info("user %s got data.read from redis.",uid)
 	end
 	users[uid] = u
