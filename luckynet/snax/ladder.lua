@@ -121,34 +121,21 @@ function removeLine( lid )
 	end
 end
 
-function removeUserFromLine(uid)
-	-- body
-	local line
-	local index
-
-	for i,l in ipairs(ladder.lines) do
-		if l.users[uid] then
-			line=l
-			index=i
-			break
-		end
-	end
-
-	if line then
-		removeUserInLine(line,uid)
-	end
-end
-
 function removeUserInLine( line,uid )
 	-- body
 	assert(line)
 	assert(uid)
 
+	if not line.users[uid] then
+		log.info("队列中找不到对应uid.")
+		return
+	end
+
 	updateLine(line,uid,nil)
 	log.info("用户%s被移出了天梯队列，这里没有考虑lock的情况，可能有问题.",uid)
 
 	if line.ucount == 0 then
-		log.info("队列%s没有用户了，删除掉.这里和Res是否存在多线程问题还需要研究下.",line.lid)
+		log.info("队列%s没有用户了，删除掉.",line.lid)
 		table.remove(ladder.lines,line.indexInLines)
 	end
 end
@@ -175,6 +162,11 @@ function response.Con(uid,lid)
 	end
 
 	local line = ladder.linemap[lid]
+
+	if not line then
+		return DPROTO_TYEP_FAIL,"找不到队列 "..lid
+	end
+
 	local index = line.indexInLines
 	local user = line.users[uid]
 
@@ -184,10 +176,6 @@ function response.Con(uid,lid)
 
 	if user.con == true then
 		return DPROTO_TYEP_OK
-	end
-
-	if not line then
-		return DPROTO_TYEP_FAIL,"找不到队列 "..lid
 	end
 
 	if line.locked == false then
@@ -231,22 +219,9 @@ function  init( ... )
 
 	pusher = snax.queryglobal("pusher")
 
-	kafka.sub("disconnect",function(uid)
-		-- body
-		removeUserFromLine(uid)
-	end)
-
-	kafka.sub("logout",function(uid)
-		-- body
-		removeUserFromLine(uid)
-	end)
-
 end
 
 function exit( ... )
 	-- body
 	log.info('ladder exit.')
-
-	kafka.unsub("disconnect")
-	kafka.unsub("logout")
 end

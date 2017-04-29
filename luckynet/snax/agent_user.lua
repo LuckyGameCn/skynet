@@ -49,9 +49,15 @@ function readUserDataToMem( uid )
 end
 
 function saveUserDataToDB( uid )
+	assert(uid)
+	
 	-- body
 	local u = users[uid]
-	db:hmset(uid,"uid",u.uid,"score",u.score)
+	if u then
+		db:hmset(uid,"uid",u.uid,"score",u.score)
+	else
+		log.error("can not save a nil u.uid="..uid)
+	end
 end
 
 function saveValueToDB( uid,key,value )
