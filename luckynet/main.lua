@@ -19,7 +19,7 @@ function()
 
 	local wd = skynet.uniqueservice(true,'watchdog')
 	skynet.send(wd, "lua", "open", {
-	    address = "127.0.0.1", -- 监听地址 127.0.0.1
+	    address = "0.0.0.0", -- 监听地址 127.0.0.1
 		port = 6024,
 		maxclient = 102400,   -- 最多允许 1024 个外部连接同时建立
 		nodelay = true,     -- 给外部连接设置  TCP_NODELAY 属性
@@ -27,6 +27,7 @@ function()
 
 	local msggate = skynet.uniqueservice(true,"msggate")
 	skynet.call(msggate, "lua", "open" , {
+		address = "0.0.0.0",
 		port = 8888,
 		maxclient = 102400,
 		servername = "msggate_sample",

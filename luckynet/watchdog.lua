@@ -16,11 +16,11 @@ function SOCKET.open(fd, addr)
 end
 function SOCKET.close(fd)
 	-- body
-	local agent = agents[lid]
+	local agent = forward[fd]
 	if agent then
 		agent.post.disconnect(fd)
 	else
-		log.error("disconnect an unexsit fd.%s",fd)
+		log.info("disconnect an unexsit fd.%s",fd)
 	end
 end
 
@@ -31,11 +31,18 @@ function SOCKET.data(fd,msg)
 		if msg.type == DPROTO_TYEP_DATA_INIT then
 			local lid = msg.lid
 			local uid = msg.id
+			local token = msg.token
 			local agent = agents[lid]
 			if agent then
-				agent.post.connect(lid,uid,fd)
-				forward[fd] = agent
-				handshake[fd] = nil
+				local ok = agent.req.connect(lid,token,uid,fd)
+				if ok then
+					forward[fd] = agent
+					handshake[fd] = nil
+				else
+					log.error("connect agent play fail.")
+					skynet.call(gate,"lua","kick",fd)
+					handshake[fd] = nil
+				end
 			else
 				log.error("can not find play agent.")
 			end
@@ -53,9 +60,9 @@ function SOCKET.data(fd,msg)
 end
 
 local CMD = {}
-function CMD.open_agent(lid,users)
+function CMD.open_agent(lid,token,users)
 	-- body
-	local agent = snax.newservice("agent_play",lid,users)
+	local agent = snax.newservice("agent_play",lid,token,users)
 	agents[lid] = agent
 end
 function CMD.open(conf)
@@ -85,5 +92,10 @@ skynet.start(function ()
 		
 		skynet.call(gate,"lua","kick",fd)
 		forward[fd]	= nil
+	end)
+
+	kafka.sub("agent_play_exit",function ( lid )
+		-- body
+		agents[lid] = nil
 	end)
 end)

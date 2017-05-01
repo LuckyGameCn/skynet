@@ -41,12 +41,12 @@ function search(subid)
 	end
 end
 
-function play(addr,port,subid,lid)
+function play(addr,port,subid,lid,token)
 	-- body
 	local sock = socket.connect(addr,port)
 	assert(sock,"connect play server error.")
 
-	sendData(sock,"req",{type=DPROTO_TYEP_DATA_INIT,id=subid,lid=lid})
+	sendData(sock,"req",{type=DPROTO_TYEP_DATA_INIT,id=subid,lid=lid,token=token})
 
 	-- body
 	while true do
@@ -62,7 +62,7 @@ function play(addr,port,subid,lid)
 end
 
 function confirm(subid,lid)
-	local addr,port
+	local addr,port,token
 
 	local ok,ret = sendRequest("req","res",{type=DPROTO_TYEP_LADDERCON,id=subid,lid=lid})
 	if ret.type == DPROTO_TYEP_OK then
@@ -72,6 +72,7 @@ function confirm(subid,lid)
 				print("all ready.connect "..ret.play_server_add)
 				addr = ret.play_server_add
 				port = ret.play_server_port
+				token = ret.token
 				break
 			elseif ret.type == DPROTO_TYEP_LADDERREADY then
 				print("用户 "..ret.uid.." 确认")
@@ -88,7 +89,7 @@ function confirm(subid,lid)
 	end
 
 	if addr then
-		play(addr,port,infos.subid,infos.lid)
+		play(addr,port,infos.subid,infos.lid,token)
 	else
 		if ret.type == DPROTO_TYEP_LADDERIN  then
 			search(subid)
@@ -200,5 +201,7 @@ while true do
 	print(info)
 	print("请输入命令：")
 	cmds = io.read()
-	handleCMD(cmds)
+	if cmds ~= '' then
+		handleCMD(cmds)
+	end
 end

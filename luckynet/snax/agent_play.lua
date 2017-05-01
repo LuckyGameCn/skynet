@@ -8,6 +8,7 @@ local kafka = require 'kafkaapi'
 
 local ag_lid
 local ag_users = {}
+local ag_token
 local ag_allready = false
 
 local ag_msg = 0
@@ -60,10 +61,20 @@ function accept.data(fd,msg)
 	end
 end
 
-function accept.connect(lid,uid,fd)
+function response.connect(lid,token,uid,fd)
 	-- body
-	assert(lid==ag_lid,"lid not match.")
-	assert(ag_users.list[uid],"uid not in users.")
+	if token~=ag_token then
+		log.info("token invalide")
+		return false
+	end
+	if lid ~= ag_lid then
+		log.info("lid not match.")
+		return false
+	end
+	if not ag_users.list[uid] then
+		log.info("uid not in users.")
+		return false
+	end
 
 	log.info("user %s connect agentplay.",uid)
 
@@ -104,6 +115,7 @@ function accept.connect(lid,uid,fd)
 		end
 	end
 
+	return true
 end
 
 function accept.disconnect(fd)
@@ -111,12 +123,13 @@ function accept.disconnect(fd)
 	log.info("用户断开游戏场景长链接，暂时没有处理.")
 end
 
-function  init(lid,users)
+function  init(lid,token,users)
 	-- body
 	log.info('agentplay init.lid %s.',lid)
 
 	ag_lid = lid
 	ag_users.list = users
+	ag_token = token
 	local count = 0
 	for k,v in pairs(ag_users.list) do
 		count = count + 1
@@ -127,4 +140,6 @@ end
 function exit( ... )
 	-- body
 	log.info('agentplay exit.')
+	
+	kafka.pub("agent_play_exit",ag_lid)
 end

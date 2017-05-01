@@ -18,6 +18,7 @@ proto.all = sprotoparser.parse [[
 
 #天梯用
 	lid 3 : integer
+	token 4 : string
 }
 
 .user{
@@ -38,6 +39,7 @@ proto.all = sprotoparser.parse [[
 #从天梯进入游戏场景服务
 	play_server_add 7 : string
 	play_server_port 8 : integer
+	token 9 : string
 }
 
 ]]

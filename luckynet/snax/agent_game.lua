@@ -2,6 +2,7 @@ local snax = require 'snax'
 local skynet = require 'skynet'
 local log = require 'lnlog'
 local kafka = require 'kafkaapi'
+local crypt = require 'crypt'
 
 local agent_user = nil
 local ladder = nil
@@ -30,10 +31,17 @@ function  init( ... )
 
 	kafka.sub("ladder_all_confirm",function ( lid,av,users )
 		-- body
-		local wd = skynet.queryservice(true,"watchdog")
-		skynet.call(wd,"lua","open_agent",lid,users)
+		local token = crypt.randomkey()
 
-		local msg = {type=DPROTO_TYEP_LADDEROK,average=tostring(av),linelist=users,play_server_add="127.0.0.1",play_server_port=6024}
+		local wd = skynet.queryservice(true,"watchdog")
+		skynet.call(wd,"lua","open_agent",lid,token,users)
+
+		local msg = {type=DPROTO_TYEP_LADDEROK,
+					average=tostring(av),
+					linelist=users,
+					token=token,
+					play_server_add="127.0.0.1",
+					play_server_port=6024}
 
 		local pusher = snax.queryglobal("pusher")
 		for k,v in pairs(users) do
