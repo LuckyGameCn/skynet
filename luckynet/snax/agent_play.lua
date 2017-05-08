@@ -6,12 +6,11 @@ local socket = require 'socket'
 local snax = require 'snax'
 local kafka = require 'kafkaapi'
 
+local ag_game
 local ag_lid
 local ag_users = {}
 local ag_token
 local ag_allready = false
-
-local ag_msg = 0
 
 function sendToAll(msg)
 	-- body
@@ -21,8 +20,6 @@ function sendToAll(msg)
 	for k,v in pairs(ag_users.list) do
 		socket.write(v.fd,pack)
 	end
-
-	ag_msg = ag_msg + 1
 end
 
 function exitGame(uid)
@@ -49,6 +46,17 @@ function gameOver()
 		log.info("set user %s score %d",k,v.score)
 		agent_user.post.saveScore(k,v.score)
 	end
+end
+
+function gameInit()
+	-- body
+
+	ag_game = require "game"
+	ag_game:init()
+
+	local msg = {type=DPROTO_TYEP_DATA_INIT}
+	log.info("游戏场景准备完毕，发送游戏初始化数据给所有用户.")
+	sendToAll(msg)
 end
 
 function accept.data(fd,msg)
@@ -95,23 +103,7 @@ function response.connect(lid,token,uid,fd)
 		end
 		if result then
 			ag_allready = true
-			local msg = {type=DPROTO_TYEP_DATA_INIT}
-			log.info("游戏场景准备完毕，发送游戏初始化数据给所有用户.")
-			sendToAll(msg)
-
-			skynet.fork(function()
-				while true do
-					log.info("ag_msg %s",ag_msg)
-					if ag_msg < 5 then
-						local msg = {type=DPROTO_TYEP_DATA}
-						sendToAll(msg)
-					else
-						gameOver()
-						break
-					end
-					skynet.sleep(200)
-				end
-			end)
+			gameInit()
 		end
 	end
 
@@ -140,6 +132,6 @@ end
 function exit( ... )
 	-- body
 	log.info('agentplay exit.')
-	
+
 	kafka.pub("agent_play_exit",ag_lid)
 end
