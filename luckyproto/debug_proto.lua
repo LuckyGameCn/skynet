@@ -7,9 +7,22 @@ local proto = {}
 
 proto.all = sprotoparser.parse [[
 
+.block{
+	type 1 : integer
+	x 2 : integer
+	y 3 : integer
+	w 4 : integer
+	h 5 : integer
+	id 6 : integer
+}
+
 .data{
 	type 1 : integer
 	id 2 : string
+
+	initdata 3 : *block
+	initw 4 : integer
+	inith 5 : integer
 }
 
 .req{

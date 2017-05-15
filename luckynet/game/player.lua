@@ -1,6 +1,8 @@
 local player = {}
-player.w = 2
-player.h = 2
+player.w = 3
+player.h = 3
+player.type = BLOCK_TYPE_PLAYER
+
 function player:init( uid )
 	-- body
 	self.uid = uid

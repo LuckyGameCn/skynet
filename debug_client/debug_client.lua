@@ -184,24 +184,36 @@ function handleCMD(cmds)
 	end
 end
 
-info = [[
+function interactMode()
+	-- body
+	info = [[
 
-登陆 login[ln] [username]
-退出登陆 logout[lt]
-寻找天梯 search[s]
-确认天梯 confirm[c]
-]]
--- handleCMD("login jj")
--- handleCMD("logout")
+	登陆 login[ln] [username]
+	退出登陆 logout[lt]
+	寻找天梯 search[s]
+	确认天梯 confirm[c]
+	]]
+	-- handleCMD("login jj")
+	-- handleCMD("logout")
 
--- handleCMD("login "..crypt.randomkey())
--- handleCMD("search "..infos.subid)
--- handleCMD(string.format("confirm %s %s",infos.subid,infos.lid))
-while true do
-	print(info)
-	print("请输入命令：")
-	cmds = io.read()
-	if cmds ~= '' then
-		handleCMD(cmds)
+	-- handleCMD("login "..crypt.randomkey())
+	-- handleCMD("search "..infos.subid)
+	-- handleCMD(string.format("confirm %s %s",infos.subid,infos.lid))
+	while true do
+		print(info)
+		print("请输入命令：")
+		cmds = io.read()
+		if cmds ~= '' then
+			handleCMD(cmds)
+		end
 	end
+end
+
+if arg[1] then
+	local un = arg[1]
+	handleCMD("ln "..un)
+	handleCMD("search "..infos.subid)
+	handleCMD(string.format("confirm %s %s",infos.subid,infos.lid))
+else
+	interactMode()
 end

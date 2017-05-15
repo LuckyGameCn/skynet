@@ -1,3 +1,5 @@
+local log = require 'lnlog'
+
 MAP_COORD_SEP = "#"
 
 local map = {}
@@ -16,7 +18,7 @@ function map:randomFit( w,h )
 	local rands = {}
 	for i=1,self.width do
 		for j=1,self.height do
-			if isEmpty(i,j,w,h) then
+			if self:isEmpty(i,j,w,h) then
 				table.insert(rands,{x=i,y=j})
 			end
 		end
@@ -24,7 +26,7 @@ function map:randomFit( w,h )
 	return rands
 end
 
-function isEmpty( i,j,w,h )
+function map:isEmpty( i,j,w,h )
 	-- body
 	for x=i,i+w-1 do
 		for y=j,j+h-1 do
@@ -95,6 +97,9 @@ function map:put( block,x,y )
 	end
 
 	self.blocks[block.id] = block
+
+	block.x = x
+	block.y = y
 end
 
 function map:get( x,y )

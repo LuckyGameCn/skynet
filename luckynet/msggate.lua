@@ -69,8 +69,8 @@ function server.request_handler(username, msg)
 	log.info("get ["..users[username].."] %s",ptable(msg))
 	if msg.type == DPROTO_TYEP_LADDERIN then
 		local id = msg.id
-		local ret,lid = agent.req.ladderIn(id)
-		return retRequest(id,{type=ret,lid=lid})
+		local ret,lid,resmsg = agent.req.ladderIn(id)
+		return retRequest(id,{type=ret,lid=lid,resmsg=resmsg})
 	elseif msg.type == DPROTO_TYEP_LADDERCON then
 		local ret,resmsg = agent.req.ladderCon(msg.id,msg.lid)
 		return retRequest(msg.id,{type=ret,resmsg=resmsg})

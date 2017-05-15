@@ -147,7 +147,7 @@ function response.In(uid,score)
 
 	if line.users[uid] then
 		log.error("队列中存在了相同uid的用户.%s",uid)
-		return DPROTO_TYEP_FAIL,"same user in again."
+		return DPROTO_TYEP_FAIL,0,"same user in again."
 	end
 
 	insertLine(line,uid,score)

@@ -70,13 +70,6 @@ function cleanUserDataInMem( uid )
 	users[uid] = nil
 end
 
-function accept.readu( uid )
-	-- body
-	if users[uid] == nil then
-		readUserDataToMem(uid)
-	end
-end
-
 function accept.saveu( uid )
 	-- body
 	saveUserDataToDB(uid)
@@ -92,6 +85,10 @@ end
 
 function response.getu( uid )
 	-- body
+	if users[uid] == nil then
+		readUserDataToMem(uid)
+	end
+
 	local u = users[uid]
 	return u
 end
@@ -114,10 +111,6 @@ function  init( ... )
 	db = redis.connect({host="127.0.0.1"})
 	assert(db)
 
-	kafka.sub("login",function (uid)
-		-- body
-		readUserDataToMem(uid)
-	end)
 	kafka.sub("logout",function (uid)
 		-- body
 		saveUserDataToDB(uid)
