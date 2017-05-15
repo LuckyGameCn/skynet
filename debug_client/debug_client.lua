@@ -51,7 +51,7 @@ function play(addr,port,subid,lid,token)
 	-- body
 	while true do
 		local msg = readData(sock)
-		print("get data type "..msg.type)
+		print("get data ["..PrintTable(msg).."]")
 		sendData(sock,"data",{type=msg.type,id=subid})
 		if msg.type == DPROTO_TYEP_DATA_END then
 			print("game over.go to game over scence.")

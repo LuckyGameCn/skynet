@@ -1,7 +1,7 @@
 local log = require 'lnlog'
 
-local MAP_Width = 1000
-local MAP_Height = 1000
+local MAP_Width = 300
+local MAP_Height = 300
 local Brick_Count = 20
 
 local game = {}
