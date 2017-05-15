@@ -50,9 +50,11 @@ end
 
 function gameInit()
 	-- body
-
+	local dt = skynet.time()
 	ag_game = require "game"
-	ag_game:init()
+	ag_game:init(ag_users)
+	dt = skynet.time() - dt
+	log.info("game init time %s",tostring(dt))
 
 	local msg = {type=DPROTO_TYEP_DATA_INIT}
 	log.info("游戏场景准备完毕，发送游戏初始化数据给所有用户.")
