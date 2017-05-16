@@ -63,12 +63,14 @@ function gameInit()
 end
 
 function accept.data(fd,msg)
-	msg = debug_proto:decode("data",msg)
+	msg = debug_proto:decode("control",msg)
 
 	log.info("get msg %d from user %s.",msg.type,msg.id)
 
 	if msg.type == DPROTO_TYEP_DATA_END then
 		exitGame(msg.id)
+	else if msg.type == DPROTO_TYEP_DATA_CON then
+		
 	end
 end
 

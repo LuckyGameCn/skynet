@@ -16,6 +16,11 @@ proto.all = sprotoparser.parse [[
 	id 6 : integer
 }
 
+.control{
+	type 1 : integer
+	di 2 : integer
+}
+
 .data{
 	type 1 : integer
 	id 2 : string
