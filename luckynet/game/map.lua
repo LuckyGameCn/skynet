@@ -54,6 +54,7 @@ end
 --大小必须是一个类型的
 function map:randomPutSome( blocks )
 	-- body 先用简单的实现试试
+	log.info("这里的性能问题还比较大，需要优化.")
 	for i,v in ipairs(blocks) do
 		self:randomPut(v)
 	end

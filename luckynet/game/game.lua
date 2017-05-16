@@ -1,4 +1,6 @@
 local log = require 'lnlog'
+local brick = require "brick"
+local player = require "player"
 
 local MAP_Width = 300
 local MAP_Height = 300
@@ -14,17 +16,17 @@ function game:init( users )
 	log.info("start init bricks.")
 	local bricks = {}
 	for i=1,Brick_Count do
-		local brick = require "brick"
-		table.insert(bricks,brick)
+		local abrick = brick:new(1,1)
+		table.insert(bricks,abrick)
 	end
 	self.map:randomPutSome(bricks)
 
 	log.info("start init players.")
 	self.players = {}
-	for i,v in ipairs(users) do
-		local player = require "player"
-		player.init(v.uid)
-		table.insert(self.players,player)
+	for i,v in pairs(users.list) do
+		local aplayer = player:new()
+		aplayer:init(v.uid)
+		table.insert(self.players,aplayer)
 	end
 	self.map:randomPutSome(self.players)
 

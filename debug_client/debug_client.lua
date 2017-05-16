@@ -52,7 +52,7 @@ function play(addr,port,subid,lid,token)
 	while true do
 		local msg = readData(sock)
 		print("get data ["..PrintTable(msg).."]")
-		sendData(sock,"data",{type=msg.type,id=subid})
+		sendData(sock,"data",{type=DPROTO_TYEP_DATA,id=subid})
 		if msg.type == DPROTO_TYEP_DATA_END then
 			print("game over.go to game over scence.")
 			break

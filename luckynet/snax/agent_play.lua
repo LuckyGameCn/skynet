@@ -50,7 +50,7 @@ end
 
 function gameInit()
 	-- body
-	log.info("start init game.")
+	log.info("start init game.[%s]",ptable(ag_users))
 	local dt = skynet.time()
 	ag_game = require "game"
 	local initdata,w,h = ag_game:init(ag_users)
