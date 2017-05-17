@@ -53,7 +53,7 @@ function play(addr,port,subid,lid,token)
 		local msg = readData(sock)
 		print("get data ["..PrintTable(msg).."]")
 		local rand = math.random(1,4)
-		sendData(sock,"control",{type=DPROTO_TYEP_DATA_CON,di=rand})
+		sendData(sock,"control",{type=DPROTO_TYEP_DATA_MOVE,di=rand})
 		if msg.type == DPROTO_TYEP_DATA_END then
 			print("game over.go to game over scence.")
 			break

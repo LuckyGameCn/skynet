@@ -23,12 +23,14 @@ function game:init( users )
 
 	log.info("start init players.")
 	self.players = {}
-	for i,v in pairs(users.list) do
+	local randomPlayers = {}
+	for k,v in pairs(users.list) do
 		local aplayer = player:new()
 		aplayer:init(v.uid)
-		table.insert(self.players,aplayer)
+		self.players[k] = aplayer
+		table.insert(randomPlayers,aplayer)
 	end
-	self.map:randomPutSome(self.players)
+	self.map:randomPutSome(randomPlayers)
 
 	log.info("start generate init data.")
 	local blocks = {}
@@ -43,6 +45,11 @@ function game:init( users )
 		table.insert(blocks,block)
 	end
 	return blocks,MAP_Width,MAP_Height
+end
+
+function game:move( uid,di )
+	-- body
+	log.info("user %s want move %d",uid,di)
 end
 
 return game

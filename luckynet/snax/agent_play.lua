@@ -63,14 +63,15 @@ function gameInit()
 end
 
 function accept.data(fd,msg)
+	local uid = ag_users.fds[fd]
 	msg = debug_proto:decode("control",msg)
 
-	log.info("get msg %d from user %s.",msg.type,msg.id)
+	log.info("get msg %d from user %s.",msg.type,uid)
 
 	if msg.type == DPROTO_TYEP_DATA_END then
 		exitGame(msg.id)
-	else if msg.type == DPROTO_TYEP_DATA_CON then
-		
+	elseif msg.type == DPROTO_TYEP_DATA_MOVE then
+		ag_game:move(uid,msg.di)
 	end
 end
 
@@ -94,6 +95,7 @@ function response.connect(lid,token,uid,fd)
 	local u = ag_users.list[uid]
 	u.ready = true
 	u.fd = fd
+	ag_users.fds[fd] = uid
 
 	if ag_allready then
 		log.info("all ready.do noting.这个用户可能是重连进来的，需要设计崩溃恢复的逻辑.")
@@ -126,6 +128,7 @@ function  init(lid,token,users)
 
 	ag_lid = lid
 	ag_users.list = users
+	ag_users.fds = {}
 	ag_token = token
 	local count = 0
 	for k,v in pairs(ag_users.list) do
