@@ -8,8 +8,10 @@ local Brick_Count = 20
 
 local game = {}
 
-function game:init( users )
+function game:init( users,notifyAllFunc )
 	-- body
+	self.notifyAll=notifyAllFunc
+
 	self.map = require "map"
 	self.map:init(MAP_Width,MAP_Height)
 	
@@ -49,7 +51,15 @@ end
 
 function game:move( uid,di )
 	-- body
-	log.info("user %s want move %d",uid,di)
+	local aplayer = self.players[uid]
+	assert(aplayer,"aplayer can not be found.")
+
+	local res = self.map:move(aplayer,di)
+	if res then
+		self.notifyAll(NOTIFY_TYPE_MOVE,{x=aplayer.x,y=aplayer.y,id=aplayer.uid})
+	else
+		log.warn("player %s move fail.",uid)
+	end
 end
 
 return game

@@ -112,4 +112,8 @@ function map:set( x,y,v )
 	self.mdata[k] = v
 end
 
+function map:move( block,di )
+	-- body
+end
+
 return map

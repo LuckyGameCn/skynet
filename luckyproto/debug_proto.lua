@@ -28,6 +28,9 @@ proto.all = sprotoparser.parse [[
 	initdata 3 : *block
 	initw 4 : integer
 	inith 5 : integer
+
+	x 6 : integer
+	y 7 : integer
 }
 
 .req{

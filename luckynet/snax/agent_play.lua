@@ -22,6 +22,14 @@ function sendToAll(msg)
 	end
 end
 
+function notifyAll( type,params )
+	-- body
+	if type == NOTIFY_TYPE_MOVE then
+		params.type = DPROTO_TYEP_DATA_MOVE
+		sendToAll(params)
+	end
+end
+
 function exitGame(uid)
 	local u = ag_users.list[uid]
 	kafka.pub("exitGame",uid,u.fd)
@@ -53,7 +61,7 @@ function gameInit()
 	log.info("start init game.[%s]",ptable(ag_users))
 	local dt = skynet.time()
 	ag_game = require "game"
-	local initdata,w,h = ag_game:init(ag_users)
+	local initdata,w,h = ag_game:init(ag_users,notifyAll)
 	dt = skynet.time() - dt
 	log.info("game init time %s",tostring(dt))
 

@@ -50,6 +50,12 @@ function lnlogger.error(...)
 	skynet.error('[ERR]'..msg)
 end
 
+function lnlogger.warn(...)
+  local msg = string.format(...)
+  -- body
+  skynet.error('[WARNING]'..msg)
+end
+
 function lnlogger.debug(...)
   local msg = string.format(...)
   -- body
