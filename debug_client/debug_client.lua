@@ -52,6 +52,7 @@ function play(addr,port,subid,lid,token)
 	while true do
 		local msg = readData(sock)
 		print("get data ["..PrintTable(msg).."]")
+		math.randomseed(os.time())  
 		local rand = math.random(1,4)
 		sendData(sock,"control",{type=DPROTO_TYEP_DATA_MOVE,di=rand})
 		if msg.type == DPROTO_TYEP_DATA_END then

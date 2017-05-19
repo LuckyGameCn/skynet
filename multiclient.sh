@@ -6,4 +6,6 @@ rm debug.log
 lua debug_client.lua huji >> debug.log &
 lua debug_client.lua py >> debug.log &
 lua debug_client.lua mm >> debug.log &
+
+tail -f debug.log
 #3rd/lua/lua debug_client/debug_client.lua
