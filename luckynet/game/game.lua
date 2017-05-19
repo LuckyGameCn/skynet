@@ -59,6 +59,7 @@ function game:move( uid,di )
 		self.notifyAll(NOTIFY_TYPE_MOVE,{x=aplayer.x,y=aplayer.y,id=aplayer.uid})
 	else
 		log.warn("player %s move fail.",uid)
+		self.notifyAll(NOTIFY_TYPE_MOVE,{})
 	end
 end
 

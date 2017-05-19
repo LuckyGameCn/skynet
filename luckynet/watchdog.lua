@@ -74,7 +74,6 @@ skynet.start(function ()
 	-- body
 	skynet.dispatch("lua", function(session, source, cmd, subcmd, ...)
 		if cmd == "socket" then
-			log.debug("get cmd %s %s",cmd,subcmd)
 			SOCKET[subcmd](...)
 		else
 			local ret = CMD[cmd](subcmd,...)

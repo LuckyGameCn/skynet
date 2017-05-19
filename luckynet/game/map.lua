@@ -114,6 +114,68 @@ end
 
 function map:move( block,di )
 	-- body
+	local coords = nil
+	local cleans = nil
+
+	if di == MOVE_DI_UP then
+		if block.y+block.h-1 == self.height then
+			return false
+		else
+			coords = block:coordsOn(di)
+			cleans = block:coordsOn(MOVE_DI_DOWN)
+		end
+	elseif di == MOVE_DI_LEFT then
+		if block.x == 1 then
+			return false
+		else
+			coords = block:coordsOn(di)
+			cleans = block:coordsOn(MOVE_DI_RIGHT)
+		end
+	elseif di == MOVE_DI_DOWN then
+		if block.y == 1 then
+			return false
+		else
+			coords = block:coordsOn(di)
+			cleans = block:coordsOn(MOVE_DI_UP)
+		end
+	elseif di == MOVE_DI_RIGHT then
+		if block.x+block.w-1 == self.width then
+			return false
+		else
+			coords = block:coordsOn(di)
+			cleans = block:coordsOn(MOVE_DI_LEFT)
+		end
+	else
+		log.error("not valide direction.")
+		return false
+	end
+
+	assert(coords)
+	for i,v in ipairs(coords) do
+		if self:get(v.x,v.y) then
+			return false
+		end
+	end
+
+	for i,v in ipairs(coords) do
+		self:set(v.x,v.y,block.id)
+	end
+
+	for i,v in ipairs(cleans) do
+		self:set(v.x,v.y,nil)
+	end
+
+	if di == MOVE_DI_UP then
+		block.y =  block.y + 1
+	elseif di == MOVE_DI_LEFT then
+		block.x = block.x - 1
+	elseif di == MOVE_DI_DOWN then
+		block.y =  block.y - 1
+	elseif di == MOVE_DI_RIGHT then
+		block.x = block.x + 1
+	end
+
+	return true
 end
 
 return map
